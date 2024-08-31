@@ -33,4 +33,12 @@ public class PropertyService {
     public void deleteProperty(Long id) {
         propertyRepository.deleteById(id);
     }
+
+    public void deleteMultipleProperties(List<Long> ids) {
+        propertyRepository.deleteAllById(ids);
+    }
+
+    public void deleteAllProperties() {
+        propertyRepository.deleteAll();
+    }
 }

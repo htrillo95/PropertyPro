@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/properties")
@@ -36,6 +37,14 @@ public class PropertyController {
         return propertyService.saveProperty(property);
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<List<Property>> createMultipleProperties(@RequestBody List<Property> properties) {
+        List<Property> savedProperties = properties.stream()
+                .map(propertyService::saveProperty)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(savedProperties);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Property> updateProperty(@PathVariable Long id, @RequestBody Property property) {
         return propertyService.getPropertyById(id)
@@ -51,4 +60,17 @@ public class PropertyController {
         propertyService.deleteProperty(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteMultipleProperties(@RequestBody List<Long> ids) {
+        propertyService.deleteMultipleProperties(ids);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<Void> deleteAllProperties() {
+        propertyService.deleteAllProperties();
+        return ResponseEntity.noContent().build();
+    }
+
 }
