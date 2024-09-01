@@ -26,6 +26,14 @@ public class PropertyService {
         return propertyRepository.findById(id);
     }
 
+    public List<Property> getPropertiesByAddress(String address) {
+        return propertyRepository.findByAddressContainingIgnoreCase(address);
+    }
+
+    public List<Property> getPropertiesByType(String type) {
+        return propertyRepository.findByType(type);
+    }
+
     public Property saveProperty(Property property) {
         return propertyRepository.save(property);
     }
@@ -40,5 +48,20 @@ public class PropertyService {
 
     public void deleteAllProperties() {
         propertyRepository.deleteAll();
+    }
+
+    public List<Property> getPropertiesByRentAmountRange(Double minRent, Double maxRent) {
+        return propertyRepository.findByRentAmountBetween(minRent, maxRent);
+    }
+
+    public Optional<Property> updateProperty(Long id, Property propertyDetails) {
+        return propertyRepository.findById(id).map(property -> {
+            property.setAddress(propertyDetails.getAddress());
+            property.setType(propertyDetails.getType());
+            property.setRentAmount(propertyDetails.getRentAmount());
+            property.setBedrooms(propertyDetails.getBedrooms());
+            property.setBathrooms(propertyDetails.getBathrooms());
+            return propertyRepository.save(property);
+        });
     }
 }

@@ -26,8 +26,25 @@ public class TenantService {
         return tenantRepository.findById(id);
     }
 
+    public List<Tenant> getTenantsByName(String name) {
+        return tenantRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    public List<Tenant> getTenantsByEmail(String email) {
+        return tenantRepository.findByEmailContainingIgnoreCase(email);
+    }
+
     public Tenant saveTenant(Tenant tenant) {
         return tenantRepository.save(tenant);
+    }
+
+    public Optional<Tenant> updateTenant(Long id, Tenant tenantDetails) {
+        return tenantRepository.findById(id).map(tenant -> {
+            tenant.setName(tenantDetails.getName());
+            tenant.setEmail(tenantDetails.getEmail());
+            tenant.setPhone(tenantDetails.getPhone());
+            return tenantRepository.save(tenant);
+        });
     }
 
     public void deleteTenant(Long id) {
