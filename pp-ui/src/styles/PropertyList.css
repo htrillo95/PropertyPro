@@ -1,0 +1,28 @@
+.property-list {
+    padding: 20px;
+}
+
+.properties {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.property-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.property-item h3 {
+    margin-top: 0;
+}
+
+.property-item p {
+    margin: 10px 0;
+}
+
+.property-item .btn {
+    margin-top: 10px;
+}

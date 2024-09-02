@@ -5,6 +5,17 @@ import Home from './pages/Home';
 import PropertyList from './pages/PropertyList';
 import AdminDashboard from './pages/AdminDashboard';
 import TenantPortal from './pages/TenantPortal';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import TenantDashboard from './pages/TenantDashboard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import ContactUs from './pages/ContactUs';
+import Footer from './components/Footer';
+import UserManagement from './pages/UserManagement';
+import PropertyManagement from './pages/PropertyManagement';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
 
 function App() {
     return (
@@ -14,10 +25,22 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/properties" element={<PropertyList />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/tenant" element={<TenantPortal />} />
-                    {/* Add more routes as needed */}
+                    <Route path="/tenants" element={<TenantPortal />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/tenant-dashboard" element={<TenantDashboard />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/contact" element={<ContactUs />} />
+                    {/* Admin routes */}
+                    <Route path="/admin" element={<AdminDashboard />}>
+                        <Route path="user-management" element={<UserManagement />} />
+                        <Route path="property-management" element={<PropertyManagement />} />
+                        <Route path="reports" element={<Reports />} />
+                        <Route path="settings" element={<Settings />} />
+                    </Route>
                 </Routes>
+                <Footer />
             </div>
         </Router>
     );
