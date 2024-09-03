@@ -15,7 +15,7 @@ body {
 
 /* Banner Image */
 .banner-image {
-    height: 300px;
+    height: 400px;
     background-size: cover;
     background-position: center;
 }
@@ -231,3 +231,10 @@ body {
 .footer-links a:hover {
     color: #007bff; /* Matching link color with the button */
 }
+
+/* Navbar Styles */
+.navbar {
+    padding-left: 20px; /* Add padding to the left side of the navbar */
+    padding-right: 20px; /* Optional: Add padding to the right side as well for symmetry */
+}
+

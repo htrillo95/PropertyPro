@@ -2,13 +2,15 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import '../styles/Home.css';
-import bannerImage from '../assets/images/banner.jpg';
+import bannerImage from '../assets/images/banner3.webp';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBuilding, faUsers, faFileContract, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { Carousel } from 'react-bootstrap';
 import Place1 from '../assets/images/Place1.webp';
+import Place4 from '../assets/images/place4.jpeg';
 import Place2 from '../assets/images/Place2.webp';
-import Place3 from '../assets/images/Place3.webp';
+import Place3 from '../assets/images/place5.jpeg';
+
 
 function Home() {
     return (
@@ -27,26 +29,28 @@ function Home() {
             </div>
 
             {/* About Section */}
-            <div className="about-section">
-                <h2>About PropertyPro</h2>
-                <ul className="about-list">
-                    <li>
-                        <FontAwesomeIcon icon={faCheckCircle} className="icon" />
-                        Comprehensive property management services.
-                    </li>
-                    <li>
-                        <FontAwesomeIcon icon={faCheckCircle} className="icon" />
-                        Tenant management and communication tools.
-                    </li>
-                    <li>
-                        <FontAwesomeIcon icon={faCheckCircle} className="icon" />
-                        Maintenance tracking to stay on top of repairs and upkeep.
-                    </li>
-                    <li>
-                        <FontAwesomeIcon icon={faCheckCircle} className="icon" />
-                        Easy-to-use dashboard for managing all aspects of your properties.
-                    </li>
-                </ul>
+            <div className="about-section mt-5">
+                <div className="container text-center">
+                    <h2 className="mb-4">Our Mission</h2>
+                    <p className="lead mb-4">
+                        At PropertyPro, we strive to provide comprehensive, reliable, and easy-to-use property management solutions that empower property owners and tenants alike. Our mission is to simplify property management through innovative tools, seamless communication, and dedicated support.
+                    </p>
+                    
+                    <div className="row mt-5">
+                        <div className="col-md-6">
+                            <h4>What We Offer</h4>
+                            <ul className="list-unstyled">
+                                <li><FontAwesomeIcon icon={faCheckCircle} className="text-primary" /> Comprehensive property management services</li>
+                                <li><FontAwesomeIcon icon={faCheckCircle} className="text-primary" /> Tenant management and communication tools</li>
+                                <li><FontAwesomeIcon icon={faCheckCircle} className="text-primary" /> Maintenance tracking to stay on top of repairs and upkeep</li>
+                                <li><FontAwesomeIcon icon={faCheckCircle} className="text-primary" /> Easy-to-use dashboard for managing all aspects of your properties</li>
+                            </ul>
+                        </div>
+                        <div className="col-md-6">
+                            <img src={Place1} alt="PropertyPro Services" className="img-fluid rounded shadow" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Services Section */}
@@ -97,12 +101,11 @@ function Home() {
                     <Carousel.Item>
                         <img
                             className="d-block w-100"
-                            src={Place1}
+                            src={Place4}
                             alt="First property"
                         />
                         <Carousel.Caption>
-                            <h3>Loft Apartment</h3>
-                            <p>Spacious loft with modern amenities.</p>
+                            <h3>Modern Urban Spaces</h3>
                         </Carousel.Caption>
                     </Carousel.Item>
                     <Carousel.Item>
@@ -112,8 +115,7 @@ function Home() {
                             alt="Second property"
                         />
                         <Carousel.Caption>
-                            <h3>Open Floor Condo</h3>
-                            <p>Condo with an open floor plan and great views.</p>
+                            <h3>Rustic Charm</h3>
                         </Carousel.Caption>
                     </Carousel.Item>
                     <Carousel.Item>
@@ -123,8 +125,7 @@ function Home() {
                             alt="Third property"
                         />
                         <Carousel.Caption>
-                            <h3>Rustic Home</h3>
-                            <p>A beautiful rustic home in a quiet neighborhood.</p>
+                            <h3>Cozy Retreats</h3>
                         </Carousel.Caption>
                     </Carousel.Item>
                 </Carousel>
@@ -136,8 +137,6 @@ function Home() {
                 <p>Let us manage your properties effortlessly. Existing tenants visit the portal for any related concerns.</p>
                 <Link to="/tenants" className="btn btn-primary">Log In</Link>
             </div>
-
-            
         </div>
     );
 }
