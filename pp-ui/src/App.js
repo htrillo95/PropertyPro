@@ -16,33 +16,39 @@ import UserManagement from './pages/UserManagement';
 import PropertyManagement from './pages/PropertyManagement';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import AdminLogin from './AdminLogin';
+import ProtectedRoute from './ProtectedRoute';
+import { AuthProvider } from './AuthContext'; 
 
 function App() {
     return (
-        <Router>
-            <div className="container mt-4">
-                <Navbar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/properties" element={<PropertyList />} />
-                    <Route path="/tenants" element={<TenantPortal />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/tenant-dashboard" element={<TenantDashboard />} />
-                    <Route path="/privacy" element={<PrivacyPolicy />} />
-                    <Route path="/terms" element={<TermsOfService />} />
-                    <Route path="/contact" element={<ContactUs />} />
-                    {/* Admin routes */}
-                    <Route path="/admin" element={<AdminDashboard />}>
-                        <Route path="user-management" element={<UserManagement />} />
-                        <Route path="property-management" element={<PropertyManagement />} />
-                        <Route path="reports" element={<Reports />} />
-                        <Route path="settings" element={<Settings />} />
-                    </Route>
-                </Routes>
-                <Footer />
-            </div>
-        </Router>
+        <AuthProvider> {/* Wrap your app in AuthProvider */}
+            <Router>
+                <div className="container mt-4">
+                    <Navbar />
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/properties" element={<PropertyList />} />
+                        <Route path="/tenants" element={<TenantPortal />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/tenant-dashboard" element={<TenantDashboard />} />
+                        <Route path="/admin-login" element={<AdminLogin />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/terms" element={<TermsOfService />} />
+                        <Route path="/contact" element={<ContactUs />} />
+                        {/* Admin routes */}
+                        <Route path="/admin" element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />}>
+                            <Route path="user-management" element={<UserManagement />} />
+                            <Route path="property-management" element={<PropertyManagement />} />
+                            <Route path="reports" element={<Reports />} />
+                            <Route path="settings" element={<Settings />} />
+                        </Route>
+                    </Routes>
+                    <Footer />
+                </div>
+            </Router>
+        </AuthProvider>
     );
 }
 
