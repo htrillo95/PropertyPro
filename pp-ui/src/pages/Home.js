@@ -155,11 +155,11 @@ function Home() {
             </div>
 
             {/* Call to Action Section */}
-            <div className="cta-section py-5 mt-5 text-center  text-black">
+            <div className="cta-section py-5 mt-5 text-center text-black">
                 <div className="container">
                     <h2 className="mb-4">Ready to Get Started?</h2>
                     <p>Let us manage your properties effortlessly. Existing tenants can visit the portal for any related concerns.</p>
-                    <Link to="/tenants" className="btn btn-light mt-3">Log In</Link>
+                    <Link to="/tenants" className="btn btn-light btn mt-3">Log In</Link>
                 </div>
             </div>
         </div>
