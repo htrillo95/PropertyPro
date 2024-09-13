@@ -1,59 +1,104 @@
 /* General Styles */
-body {
-    background-color: #faf3e0; /* Pale Beige Background */
+body, html {
+    margin: 0;
+    padding: 0;
     font-family: Arial, sans-serif;
+    background-color: #cecece; /* Pale Beige Background */
     color: #333;
 }
 
 /* Home Section */
 .home {
-    text-align: center;
-    padding: 20px;
-    background-color: #ffffff; /* Keep the main content area white */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #ffffff;
 }
 
 /* Banner Image */
 .banner-image {
-    height: 400px;
+    width: 100vw; /* Full width of viewport */
+    height: 70vh; /* Full height of viewport */
     background-size: cover;
     background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.hero-section {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100vw !important;
+    padding: 60px 0 !important;
 }
 
 /* Hero Section */
 .hero-section {
-    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-    padding: 50px 20px;
-    border-radius: 10px;
+    width: 100vw; /* Full width of the viewport */
+    padding: 60px 0;
 }
 
-.hero-section h1 {
-    font-size: 3em;
+.hero-box {
+    max-width: 1200px; /* This will box the content */
+    width: 100%;
+    text-align: center;
+    margin: 0 auto; /* Ensure it’s centered */
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 40px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hero-box h1 {
+    font-size: 2.5em;
     font-weight: bold;
     color: #333;
+    margin-bottom: 15px; /* Add margin to separate from the paragraph */
 }
 
-.hero-section p {
-    font-size: 1.5em;
+.hero-box p {
+    font-size: 1.2em;
     color: #666;
+    margin-bottom: 30px; /* Add more space between the text and button */
+}
+
+.hero-box .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 12px 24px;
+    font-size: 1.2em;
+    display: inline-block;
+}
+
+.hero-box .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
 }
 
 /* About, Services, Featured Properties, Contact Sections */
 .about-section,
 .services-section,
 .featured-properties-section,
+.testimonials-section,
 .contact-section {
+    width: 100%;
+    max-width: 1200px;
     padding: 60px 20px;
-    background-color: #ffffff; /* Keep sections white */
+    background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
-    margin-bottom: 20px; /* Space between sections */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px; /* Ensure consistent spacing between sections */
 }
 
 /* Services List */
 .services-list {
     display: flex;
     justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .service-item {
@@ -62,92 +107,40 @@ body {
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    flex: 1 1 30%; /* Ensure service items take up equal width */
 }
 
 .service-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .service-item h3 {
     margin-bottom: 15px;
 }
 
-/* Contact Section */
-.contact-section {
-    background-color: #f8f9fa;
-    padding: 60px 20px;
-}
-
-.contact-section p {
-    margin-top: 20px;
-    font-size: 1.2em;
-}
-
-/* Button Animations */
-.btn-animate {
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.btn-animate:hover {
-    background-color: #0056b3;
-    transform: translateY(-3px);
-}
-
-.btn-primary {
-    padding: 15px 30px;
-    font-size: 1.2em;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.btn-primary:hover {
-    background-color: #004085;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
-
 /* Featured Properties Section */
 .featured-properties-section {
-    padding: 60px 20px;
-    background-color: #f8f9fa;
     text-align: center;
-}
-
-.featured-properties-section h2 {
-    margin-bottom: 30px;
 }
 
 .carousel-item img {
-    max-height: 400px;
-    object-fit: cover;
-}
-
-.carousel-caption h3 {
-    font-size: 1.8em;
-    font-weight: bold;
-}
-
-.carousel-caption p {
-    font-size: 1.2em;
-}
+    width: 100%;
+    height: 400px; /* You can adjust the height to your liking */
+    object-fit: cover; /* Ensures the images fill the space without distortion */
+  }
 
 /* Testimonials Section */
 .testimonials-section {
-    padding: 60px 20px;
-    background-color: #f8f9fa;
     text-align: center;
-    margin-bottom: 20px;
-}
-
-.testimonials-section h2 {
-    margin-bottom: 40px;
-    font-size: 2.5em;
 }
 
 .testimonials-list {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
+    gap: 20px;
 }
 
 .testimonial-item {
@@ -155,8 +148,7 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-    margin-bottom: 20px;
+    flex: 1 1 30%; /* Ensure testimonials take up equal width */
 }
 
 .testimonial-item p {
@@ -171,16 +163,18 @@ body {
 
 /* CTA Section */
 .cta-section {
-    padding: 40px 20px;
-    background-color: #f0f0f0; /* Lighter background color */
-    color: #333;
     text-align: center;
-    margin-bottom: 20px;
+    background-color: #f0f0f0;
+    padding: 60px 20px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+    max-width: 1200px;
+    width: 100%;
 }
 
 .cta-section h2 {
     font-size: 2em;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .cta-section p {
@@ -191,14 +185,14 @@ body {
 .cta-section .btn-primary {
     background-color: #007bff;
     border-color: #007bff;
-    padding: 8px 24px; /* Reduced padding */
-    font-size: 1em; /* Smaller font size */
-    border-radius: 4px; /* Rounded corners */
+    padding: 8px 24px;
+    font-size: 1em;
+    border-radius: 4px;
 }
 
 /* Footer */
 .footer {
-    background-color: #e9ecef; /* Subtle gray background */
+    background-color: #e9ecef;
     color: #6c757d;
     padding: 20px 0;
     text-align: center;
@@ -229,12 +223,38 @@ body {
 }
 
 .footer-links a:hover {
-    color: #007bff; /* Matching link color with the button */
+    color: #007bff;
 }
 
 /* Navbar Styles */
 .navbar {
-    padding-left: 20px; /* Add padding to the left side of the navbar */
-    padding-right: 20px; /* Optional: Add padding to the right side as well for symmetry */
+    width: 100vw; /* Full width of the viewport */
+    padding: 10px 20px; /* Adjust padding */
+    background-color: #ffffff; /* Match background color with layout */
+    position: fixed; /* Keeps the navbar at the top */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Ensure navbar stays on top */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+    display: flex; /* Use flexbox for layout */
+    justify-content: flex-start; /* Align items to the left */
+    align-items: center; /* Vertically center items */
 }
 
+.navbar .nav-link {
+    color: #333;
+    text-decoration: none;
+    padding: 0 15px;
+}
+
+.navbar .nav-link:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.navbar-brand {
+    font-size: 1.5em;
+    color: #333;
+    text-decoration: none;
+    margin-right: 30px;
+}
