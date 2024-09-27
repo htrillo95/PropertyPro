@@ -1,8 +1,6 @@
 package com.hector.propertypro.propertypro.model;
 
 import jakarta.persistence.*;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,7 +47,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.username = username;
-        this.password = new BCryptPasswordEncoder().encode(password); // Password encoded during user creation
+        this.password = password; // Password will be encoded before being passed in
         this.role = role;
     }
 
@@ -83,8 +81,9 @@ public class User {
         return password;
     }
 
+    // Setter no longer encodes the password
     public void setPassword(String password) {
-        this.password = new BCryptPasswordEncoder().encode(password); // Always store encoded password
+        this.password = password;
     }
 
     public String getEmail() {
