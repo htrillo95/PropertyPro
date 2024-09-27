@@ -1,6 +1,8 @@
 package com.hector.propertypro.propertypro.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,6 +14,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String name;
+
     @Column(nullable = false, unique = true)
     private String username;
 
@@ -21,6 +26,11 @@ public class User {
     @Column(nullable = false)
     private String email;
 
+    // Role can be either ADMIN or TENANT
+    @Column(nullable = false)
+    private String role;
+
+    // Many-to-Many relationship for roles
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
@@ -29,7 +39,21 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
-    // Getters and setters
+    // Constructors, getters, and setters
+
+    public User() {
+        // Default constructor
+    }
+
+    public User(String name, String email, String username, String password, String role) {
+        this.name = name;
+        this.email = email;
+        this.username = username;
+        this.password = new BCryptPasswordEncoder().encode(password); // Password encoded during user creation
+        this.role = role;
+    }
+
+    // Getters and setters for fields
 
     public Long getId() {
         return id;
@@ -37,6 +61,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUsername() {
@@ -52,7 +84,7 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = new BCryptPasswordEncoder().encode(password); // Always store encoded password
     }
 
     public String getEmail() {
@@ -61,6 +93,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public Set<Role> getRoles() {

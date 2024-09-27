@@ -16,17 +16,18 @@ import UserManagement from './pages/UserManagement';
 import PropertyManagement from './pages/PropertyManagement';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
-import AdminLogin from './AdminLogin';
-import ProtectedRoute from './ProtectedRoute';
-import { AuthProvider } from './AuthContext'; 
+import AdminLogin from './AdminLogin';  // Use the updated, shorter AdminLogin
+import ProtectedRoute from './ProtectedRoute';  // For route protection
+import { AuthProvider } from './context/AuthContext';  // For handling user authentication
 
 function App() {
     return (
-        <AuthProvider> {/* Wrap your app in AuthProvider */}
+        <AuthProvider> {/* Wrap the app in AuthProvider for authentication */}
             <Router>
                 <div className="container mt-4">
                     <Navbar />
                     <Routes>
+                        {/* Public routes */}
                         <Route path="/" element={<Home />} />
                         <Route path="/properties" element={<PropertyList />} />
                         <Route path="/tenants" element={<TenantPortal />} />
@@ -34,11 +35,16 @@ function App() {
                         <Route path="/register" element={<Register />} />
                         <Route path="/tenant-dashboard" element={<TenantDashboard />} />
                         <Route path="/admin-login" element={<AdminLogin />} />
+                        <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/contact" element={<ContactUs />} />
-                        {/* Admin routes */}
-                        <Route path="/admin" element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />}>
+                        
+                        {/* Protected routes for admin */}
+                        <Route
+                            path="/admin"
+                            element={<ProtectedRoute element={<AdminDashboard />} requiredRole="admin" />}
+                        >
                             <Route path="user-management" element={<UserManagement />} />
                             <Route path="property-management" element={<PropertyManagement />} />
                             <Route path="reports" element={<Reports />} />

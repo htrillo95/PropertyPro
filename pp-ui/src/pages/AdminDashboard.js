@@ -1,11 +1,20 @@
 import React from 'react';
-import { Route, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';  // Corrected import
 import PropertyManagement from './PropertyManagement';
 import UserManagement from './UserManagement';
 import Reports from './Reports';
 import Settings from './Settings';
 
 function AdminDashboard() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout(); // Clear authentication state
+        navigate('/login'); // Redirect to login page after logout
+    };
+
     return (
         <div className="admin-dashboard container-fluid">
             <div className="row">
@@ -49,6 +58,9 @@ function AdminDashboard() {
                             <div className="welcome-message">
                                 <h2 className="display-4">Welcome back, Admin!</h2>
                                 <p className="lead">Manage your properties, users, and reports effectively using the tools on the left. Let's make today productive!</p>
+                                <button className="btn btn-danger" onClick={handleLogout}>
+                                    Logout
+                                </button>
                             </div>
                         } />
                         <Route path="/property-management" element={<PropertyManagement />} />

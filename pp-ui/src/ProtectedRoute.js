@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ element, requiredRole }) => {
     const { isAuthenticated, userRole } = useAuth();
@@ -10,7 +10,7 @@ const ProtectedRoute = ({ element, requiredRole }) => {
     }
 
     if (requiredRole && userRole !== requiredRole) {
-        return <Navigate to="/not-authorized" />; // Create a "Not Authorized" page or redirect as needed
+        return <Navigate to="/not-authorized" />;
     }
 
     return element;

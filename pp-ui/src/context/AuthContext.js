@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = (role) => {
         setIsAuthenticated(true);
-        setUserRole(role);
+        setUserRole(role); // Ensure role is passed properly here
     };
 
     const logout = () => {

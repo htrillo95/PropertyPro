@@ -1,76 +1,76 @@
 package com.hector.propertypro.propertypro.controller;
 
 import com.hector.propertypro.propertypro.model.Property;
-import com.hector.propertypro.propertypro.service.PropertyService;
+import com.hector.propertypro.propertypro.repository.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/properties")
 public class PropertyController {
 
-    private final PropertyService propertyService;
+    private final PropertyRepository propertyRepository;
 
     @Autowired
-    public PropertyController(PropertyService propertyService) {
-        this.propertyService = propertyService;
+    public PropertyController(PropertyRepository propertyRepository) {
+        this.propertyRepository = propertyRepository;
     }
 
     @GetMapping
     public List<Property> getAllProperties() {
-        return propertyService.getAllProperties();
+        return propertyRepository.findAll();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Property> getPropertyById(@PathVariable Long id) {
-        return propertyService.getPropertyById(id)
-                .map(ResponseEntity::ok)
+        Optional<Property> property = propertyRepository.findById(id);
+        return property.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public Property createProperty(@RequestBody Property property) {
-        return propertyService.saveProperty(property);
+        return propertyRepository.save(property);
     }
 
     @PostMapping("/batch")
     public ResponseEntity<List<Property>> createMultipleProperties(@RequestBody List<Property> properties) {
         List<Property> savedProperties = properties.stream()
-                .map(propertyService::saveProperty)
+                .map(propertyRepository::save)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(savedProperties);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Property> updateProperty(@PathVariable Long id, @RequestBody Property property) {
-        return propertyService.getPropertyById(id)
+        return propertyRepository.findById(id)
                 .map(existingProperty -> {
                     property.setId(id);
-                    return ResponseEntity.ok(propertyService.saveProperty(property));
+                    return ResponseEntity.ok(propertyRepository.save(property));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProperty(@PathVariable Long id) {
-        propertyService.deleteProperty(id);
+        propertyRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<Void> deleteMultipleProperties(@RequestBody List<Long> ids) {
-        propertyService.deleteMultipleProperties(ids);
+        propertyRepository.deleteAllById(ids);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/deleteAll")
     public ResponseEntity<Void> deleteAllProperties() {
-        propertyService.deleteAllProperties();
+        propertyRepository.deleteAll();
         return ResponseEntity.noContent().build();
     }
-
 }
