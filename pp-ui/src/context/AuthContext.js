@@ -1,19 +1,35 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [userRole, setUserRole] = useState(null); // 'tenant' or 'admin'
+    // Initialize state based on localStorage data (for persistent sessions)
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        const storedAuth = localStorage.getItem('isAuthenticated');
+        return storedAuth ? JSON.parse(storedAuth) : false;
+    });
+
+    const [userRole, setUserRole] = useState(() => {
+        const storedRole = localStorage.getItem('userRole');
+        return storedRole ? storedRole : null;
+    });
+
+    // Whenever `isAuthenticated` or `userRole` changes, update localStorage
+    useEffect(() => {
+        localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
+        localStorage.setItem('userRole', userRole);
+    }, [isAuthenticated, userRole]);
 
     const login = (role) => {
         setIsAuthenticated(true);
-        setUserRole(role); // Ensure role is passed properly here
+        setUserRole(role);
     };
 
     const logout = () => {
         setIsAuthenticated(false);
         setUserRole(null);
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userRole');
     };
 
     return (

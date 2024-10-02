@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';  // Corrected import
 import PropertyManagement from './PropertyManagement';
@@ -7,15 +7,23 @@ import Reports from './Reports';
 import Settings from './Settings';
 
 function AdminDashboard() {
-    const { logout } = useAuth();
+    const { isAuthenticated, userRole, logout } = useAuth();
     const navigate = useNavigate();
+
+    // Redirect to login if not authenticated or not admin role
+    useEffect(() => {
+        if (!isAuthenticated || userRole !== 'admin') {
+            navigate('/admin-login'); // Redirect to the admin login page
+        }
+    }, [isAuthenticated, userRole, navigate]);
 
     const handleLogout = () => {
         logout(); // Clear authentication state
-        navigate('/login'); // Redirect to login page after logout
+        navigate('/admin-login'); // Redirect to admin login page after logout
     };
 
-    return (
+    // Render Admin Dashboard
+    return isAuthenticated && userRole === 'admin' ? (
         <div className="admin-dashboard container-fluid">
             <div className="row">
                 {/* Sidebar */}
@@ -71,7 +79,7 @@ function AdminDashboard() {
                 </main>
             </div>
         </div>
-    );
+    ) : null; // Render nothing if not authenticated or not admin
 }
 
 export default AdminDashboard;
