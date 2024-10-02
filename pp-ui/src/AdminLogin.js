@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios for API calls
 import { useAuth } from './context/AuthContext';
 
 const AdminLogin = () => {
@@ -9,18 +10,25 @@ const AdminLogin = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
 
-        // Hardcoded admin credentials
-        const hardcodedUsername = 'admin';
-        const hardcodedPassword = 'adminpassword';
+        try {
+            // Send a POST request to your backend API to verify credentials
+            const response = await axios.post('http://localhost:8080/api/auth/login', { 
+                username, 
+                password 
+            });
 
-        if (username === hardcodedUsername && password === hardcodedPassword) {
-            login('admin');
-            navigate('/admin');  // Redirects to Admin Dashboard
-        } else {
-            setError('Invalid admin credentials');
+            // If login is successful, you will get user data from the response
+            if (response.status === 200 && response.data.role === 'ADMIN') {
+                login('admin'); // Set authenticated state to 'admin'
+                navigate('/admin');  // Redirect to Admin Dashboard
+            } else {
+                setError('Invalid admin credentials');
+            }
+        } catch (err) {
+            setError('Failed to login. Please check your credentials and try again.');
         }
     };
 
