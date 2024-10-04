@@ -1,31 +1,54 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext'; // Correct import
 
 function TenantDashboard() {
+    const { user } = useAuth(); // Get the logged-in user from context
     const [leaseInfo, setLeaseInfo] = useState(null);
     const [maintenanceRequests, setMaintenanceRequests] = useState([]);
     const [maintenanceIssue, setMaintenanceIssue] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
-        axios.get('/api/user/lease')
+        if (user) {
+            // Fetch lease info for the tenant
+            axios.get('/api/user/lease', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                }
+            })
             .then(response => setLeaseInfo(response.data))
-            .catch(error => setError('Failed to fetch lease information'));
+            .catch(() => setError('Failed to fetch lease information'));
 
-        axios.get('/api/user/maintenance-requests')
+            // Fetch all maintenance requests for the tenant
+            axios.get('/api/user/maintenance-requests', {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                }
+            })
             .then(response => setMaintenanceRequests(response.data))
-            .catch(error => setError('Failed to fetch maintenance requests'));
-    }, []);
+            .catch(() => setError('Failed to fetch maintenance requests'));
+        }
+    }, [user]);
 
     const handleMaintenanceRequest = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('/api/user/maintenance-requests', {
+            const response = await axios.post('/api/maintenance/submit', {
                 description: maintenanceIssue,
-                token: localStorage.getItem('token')
+                tenantId: user.id, // Use tenant ID from context
+                propertyId: user.propertyId // Adjust based on user model
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                }
             });
+
             alert('Maintenance request submitted successfully');
+            setMaintenanceRequests([...maintenanceRequests, response.data]); // Update local state
+            setMaintenanceIssue(''); // Clear form
         } catch (error) {
+            console.error('Error submitting request:', error);
             alert('Failed to submit maintenance request');
         }
     };

@@ -14,26 +14,36 @@ export const AuthProvider = ({ children }) => {
         return storedRole ? storedRole : null;
     });
 
-    // Whenever `isAuthenticated` or `userRole` changes, update localStorage
+    // New: State for user information (e.g., tenantId, propertyId)
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem('user');
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
+
+    // Whenever `isAuthenticated`, `userRole`, or `user` changes, update localStorage
     useEffect(() => {
         localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
         localStorage.setItem('userRole', userRole);
-    }, [isAuthenticated, userRole]);
+        if (user) localStorage.setItem('user', JSON.stringify(user));
+    }, [isAuthenticated, userRole, user]);
 
-    const login = (role) => {
+    const login = (userData) => {
         setIsAuthenticated(true);
-        setUserRole(role);
+        setUserRole(userData.role);
+        setUser(userData); // Set user information from login response
     };
 
     const logout = () => {
         setIsAuthenticated(false);
         setUserRole(null);
+        setUser(null);
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('userRole');
+        localStorage.removeItem('user');
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, userRole, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, userRole, user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
