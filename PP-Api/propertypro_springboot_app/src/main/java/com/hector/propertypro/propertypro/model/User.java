@@ -37,6 +37,10 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    // One-to-One relationship with Tenant
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Tenant tenant;
+
     // Constructors, getters, and setters
 
     public User() {
@@ -81,7 +85,6 @@ public class User {
         return password;
     }
 
-    // Setter no longer encodes the password
     public void setPassword(String password) {
         this.password = password;
     }
@@ -108,5 +111,15 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    // Getter and Setter for Tenant
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public void setTenant(Tenant tenant) {
+        this.tenant = tenant;
+        tenant.setUser(this); // Set bi-directional mapping
     }
 }

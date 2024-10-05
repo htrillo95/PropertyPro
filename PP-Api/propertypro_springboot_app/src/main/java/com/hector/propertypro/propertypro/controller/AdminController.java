@@ -121,7 +121,6 @@ public class AdminController {
                 .map(tenant -> {
                     tenant.setName(updatedTenant.getName());
                     tenant.setEmail(updatedTenant.getEmail());
-                    tenant.setPhone(updatedTenant.getPhone());
                     return ResponseEntity.ok(tenantRepository.save(tenant));
                 })
                 .orElse(ResponseEntity.notFound().build());

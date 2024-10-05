@@ -19,12 +19,12 @@ public class Tenant {
     @Column(nullable = false)
     private String phone;
 
-    // New: Relationship with User
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    // One-to-One relationship with User
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    // Getters and Setters
+    // Getters and setters
     public Long getId() {
         return id;
     }
@@ -49,19 +49,14 @@ public class Tenant {
         this.email = email;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public User getUser() {
         return user;
     }
 
     public void setUser(User user) {
         this.user = user;
+        if (user.getTenant() != this) {
+            user.setTenant(this); // Ensure bi-directional relationship is maintained
+        }
     }
 }

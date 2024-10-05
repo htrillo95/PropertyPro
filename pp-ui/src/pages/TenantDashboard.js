@@ -9,38 +9,56 @@ function TenantDashboard() {
     const [maintenanceIssue, setMaintenanceIssue] = useState('');
     const [error, setError] = useState('');
 
+    // Fetch user-related data once the user is available in context
     useEffect(() => {
-        if (user) {
+        console.log("User context:", user); // Log user context to debug
+        console.log("Token:", localStorage.getItem('token')); // Log token to debug
+
+        if (user && user.id) {
             // Fetch lease info for the tenant
-            axios.get('/api/user/lease', {
+            axios.get(`/api/user/lease/${user.id}`, { // Fetch based on user ID
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             })
             .then(response => setLeaseInfo(response.data))
-            .catch(() => setError('Failed to fetch lease information'));
+            .catch((err) => {
+                console.error('Failed to fetch lease information:', err);
+                setError('Failed to fetch lease information');
+            });
 
             // Fetch all maintenance requests for the tenant
-            axios.get('/api/user/maintenance-requests', {
+            axios.get(`/api/user/${user.id}/maintenance-requests`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             })
             .then(response => setMaintenanceRequests(response.data))
-            .catch(() => setError('Failed to fetch maintenance requests'));
+            .catch((err) => {
+                console.error('Failed to fetch maintenance requests:', err);
+                setError('Failed to fetch maintenance requests');
+            });
+        } else {
+            setError('User not authenticated or missing user ID');
         }
     }, [user]);
 
     const handleMaintenanceRequest = async (event) => {
         event.preventDefault();
+        
+        if (!user || !user.id) {
+            alert('User not authenticated or missing user ID.');
+            return;
+        }
+
         try {
             const response = await axios.post('/api/maintenance/submit', {
                 description: maintenanceIssue,
                 tenantId: user.id, // Use tenant ID from context
-                propertyId: user.propertyId // Adjust based on user model
+                propertyId: leaseInfo?.property?.id // If lease info contains property ID
             }, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}` // Include auth token
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
 

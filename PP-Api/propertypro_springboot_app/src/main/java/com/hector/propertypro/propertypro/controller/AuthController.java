@@ -3,12 +3,13 @@ package com.hector.propertypro.propertypro.controller;
 import com.hector.propertypro.propertypro.dto.LoginRequest;
 import com.hector.propertypro.propertypro.dto.RegistrationFormDTO;
 import com.hector.propertypro.propertypro.model.User;
+import com.hector.propertypro.propertypro.model.Tenant;
 import com.hector.propertypro.propertypro.repository.UserRepository;
+import com.hector.propertypro.propertypro.repository.TenantRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -27,30 +28,24 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private TenantRepository tenantRepository; // Inject TenantRepository
+
     private static final String userSessionKey = "user";
     private static final Logger logger = Logger.getLogger(AuthController.class.getName());
 
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthController(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public AuthController(UserRepository userRepository, TenantRepository tenantRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.tenantRepository = tenantRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     // Helper method to set user in session
     private static void setUserInSession(HttpSession session, User user) {
         session.setAttribute(userSessionKey, user.getId());
-    }
-
-    // Get User from Session
-    public User getUserFromSession(HttpSession session) {
-        Long userId = (Long) session.getAttribute(userSessionKey);
-        if (userId == null) {
-            return null;
-        }
-        Optional<User> userOpt = userRepository.findById(userId);
-        return userOpt.orElse(null);
     }
 
     // Register a new user (tenant-only)
@@ -70,9 +65,17 @@ public class AuthController {
 
         // Set default role as "TENANT" for public registrations
         String role = "TENANT";
-        String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword()); // Encode the password here
+        String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword());
         User newUser = new User(registrationFormDTO.getName(), registrationFormDTO.getEmail(), registrationFormDTO.getUsername(), hashedPassword, role);
 
+        // Create a new Tenant and link it to the User
+        Tenant newTenant = new Tenant();
+        newTenant.setName(registrationFormDTO.getName());
+        newTenant.setEmail(registrationFormDTO.getEmail());
+        newTenant.setUser(newUser); // Establish the bi-directional relationship
+        newUser.setTenant(newTenant);
+
+        // Save User (and Tenant because of CascadeType.ALL)
         userRepository.save(newUser);
         setUserInSession(request.getSession(), newUser);
 
@@ -92,19 +95,19 @@ public class AuthController {
         // Check user by username
         Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
         if (userOpt.isEmpty()) {
-            System.out.println("User not found: " + loginRequest.getUsername());
+            logger.info("User not found: " + loginRequest.getUsername());
             response.put("message", "Credentials invalid");
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         User user = userOpt.get();
-        System.out.println("User found in DB: " + user.getUsername());
-        System.out.println("Password entered: " + loginRequest.getPassword());
-        System.out.println("Password in DB: " + user.getPassword());
+        logger.info("User found in DB: " + user.getUsername());
+        logger.info("Password entered: " + loginRequest.getPassword());
+        logger.info("Password in DB: " + user.getPassword());
 
         // Check if password matches
         boolean passwordMatches = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-        System.out.println("Password matches: " + passwordMatches);
+        logger.info("Password matches: " + passwordMatches);
 
         if (!passwordMatches) {
             response.put("message", "Credentials invalid");
@@ -124,5 +127,14 @@ public class AuthController {
     public ResponseEntity<String> logout(HttpServletRequest request) {
         request.getSession().invalidate();
         return new ResponseEntity<>("User logged out successfully", HttpStatus.OK);
+    }
+
+    public User getUserFromSession(HttpSession session) {
+        Long userId = (Long) session.getAttribute(userSessionKey);
+        if (userId == null) {
+            return null;
+        }
+        Optional<User> userOpt = userRepository.findById(userId);
+        return userOpt.orElse(null);
     }
 }
