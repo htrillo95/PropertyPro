@@ -24,9 +24,14 @@ public class Property {
 
     private int bathrooms;
 
-    // Getters and setters
-    // ...
+    // New fields
+    @Column(nullable = false)
+    private String listingUrl; // The URL provided by the admin for the external listing
 
+    @Column
+    private String imageUrl; // To store the image URL parsed from the listing (if available)
+
+    // Getters and setters...
 
     public Long getId() {
         return id;
@@ -74,5 +79,21 @@ public class Property {
 
     public void setBathrooms(int bathrooms) {
         this.bathrooms = bathrooms;
+    }
+
+    public String getListingUrl() {
+        return listingUrl;
+    }
+
+    public void setListingUrl(String listingUrl) {
+        this.listingUrl = listingUrl;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

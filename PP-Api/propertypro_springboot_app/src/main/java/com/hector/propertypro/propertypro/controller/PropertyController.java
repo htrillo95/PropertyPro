@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,11 +22,13 @@ public class PropertyController {
         this.propertyRepository = propertyRepository;
     }
 
+    // Get all properties - public endpoint for displaying all properties
     @GetMapping
     public List<Property> getAllProperties() {
         return propertyRepository.findAll();
     }
 
+    // Get a property by ID
     @GetMapping("/{id}")
     public ResponseEntity<Property> getPropertyById(@PathVariable Long id) {
         Optional<Property> property = propertyRepository.findById(id);
@@ -33,19 +36,29 @@ public class PropertyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Admin: Add a new property using the listing URL (Main Endpoint for Your Use Case)
+    @PostMapping("/add")
+    public ResponseEntity<Property> addPropertyByListingUrl(@RequestBody Map<String, String> request) {
+        String listingUrl = request.get("listingUrl");
+
+        // Create a new Property object with just the URL
+        Property property = new Property();
+        property.setListingUrl(listingUrl);
+
+        // Additional logic to fetch and populate property details from the URL
+        // (e.g., address, rentAmount, etc.) can be added here.
+
+        Property savedProperty = propertyRepository.save(property);
+        return ResponseEntity.ok(savedProperty);
+    }
+
+    // Admin: Create a property with full details (optional: if you need manual property creation)
     @PostMapping
     public Property createProperty(@RequestBody Property property) {
         return propertyRepository.save(property);
     }
 
-    @PostMapping("/batch")
-    public ResponseEntity<List<Property>> createMultipleProperties(@RequestBody List<Property> properties) {
-        List<Property> savedProperties = properties.stream()
-                .map(propertyRepository::save)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(savedProperties);
-    }
-
+    // Admin: Update a property by ID
     @PutMapping("/{id}")
     public ResponseEntity<Property> updateProperty(@PathVariable Long id, @RequestBody Property property) {
         return propertyRepository.findById(id)
@@ -56,21 +69,10 @@ public class PropertyController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Admin: Delete a property by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProperty(@PathVariable Long id) {
         propertyRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/delete")
-    public ResponseEntity<Void> deleteMultipleProperties(@RequestBody List<Long> ids) {
-        propertyRepository.deleteAllById(ids);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/deleteAll")
-    public ResponseEntity<Void> deleteAllProperties() {
-        propertyRepository.deleteAll();
         return ResponseEntity.noContent().build();
     }
 }
