@@ -24,12 +24,14 @@ public class Property {
 
     private int bathrooms;
 
-    // New fields
     @Column(nullable = false)
-    private String listingUrl; // The URL provided by the admin for the external listing
+    private String listingUrl;
 
-    @Column
-    private String imageUrl; // To store the image URL parsed from the listing (if available)
+    private String imageUrl;
+
+    private String title; // Add title for property name
+
+    private String description; // Add description for property
 
     // Getters and setters...
 
@@ -95,5 +97,21 @@ public class Property {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
