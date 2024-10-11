@@ -2,13 +2,11 @@ package com.hector.propertypro.propertypro.controller;
 
 import com.hector.propertypro.propertypro.model.User;
 import com.hector.propertypro.propertypro.model.Property;
-import com.hector.propertypro.propertypro.model.Tenant;
 import com.hector.propertypro.propertypro.model.Lease;
 import com.hector.propertypro.propertypro.model.Role;
 import com.hector.propertypro.propertypro.repository.UserRepository;
 import com.hector.propertypro.propertypro.repository.PropertyRepository;
-import com.hector.propertypro.propertypro.repository.TenantRepository;
-import com.hector.propertypro.propertypro.repository.LeaseRepository;
+import com.hector.propertypro.propertypro.service.LeaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +25,15 @@ public class AdminController {
     private PropertyRepository propertyRepository;
 
     @Autowired
-    private TenantRepository tenantRepository;
-
-    @Autowired
-    private LeaseRepository leaseRepository;
+    private LeaseService leaseService;
 
     // --- User Management ---
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
 
     @PutMapping("/users/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updatedUser) {
@@ -72,6 +73,12 @@ public class AdminController {
 
     // --- Property Management ---
 
+    @GetMapping("/properties")
+    public ResponseEntity<List<Property>> getAllProperties() {
+        List<Property> properties = propertyRepository.findAll();
+        return ResponseEntity.ok(properties);
+    }
+
     @PostMapping("/properties")
     public ResponseEntity<Property> addProperty(@RequestBody Property property) {
         Property savedProperty = propertyRepository.save(property);
@@ -107,54 +114,29 @@ public class AdminController {
         return ResponseEntity.ok(properties);
     }
 
-    // --- Tenant Management ---
-
-    @PostMapping("/tenants")
-    public ResponseEntity<Tenant> addTenant(@RequestBody Tenant tenant) {
-        Tenant savedTenant = tenantRepository.save(tenant);
-        return ResponseEntity.ok(savedTenant);
-    }
-
-    @PutMapping("/tenants/{id}")
-    public ResponseEntity<Tenant> updateTenant(@PathVariable Long id, @RequestBody Tenant updatedTenant) {
-        return tenantRepository.findById(id)
-                .map(tenant -> {
-                    tenant.setName(updatedTenant.getName());
-                    tenant.setEmail(updatedTenant.getEmail());
-                    return ResponseEntity.ok(tenantRepository.save(tenant));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/tenants/{id}")
-    public ResponseEntity<Void> deleteTenant(@PathVariable Long id) {
-        tenantRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
     // --- Lease Management ---
 
     @PostMapping("/leases")
     public ResponseEntity<Lease> addLease(@RequestBody Lease lease) {
-        Lease savedLease = leaseRepository.save(lease);
+        Lease savedLease = leaseService.saveLease(lease);  // Use leaseService
         return ResponseEntity.ok(savedLease);
     }
 
     @PutMapping("/leases/{id}")
     public ResponseEntity<Lease> updateLease(@PathVariable Long id, @RequestBody Lease updatedLease) {
-        return leaseRepository.findById(id)
-                .map(lease -> {
-                    lease.setStartDate(updatedLease.getStartDate());
-                    lease.setEndDate(updatedLease.getEndDate());
-                    lease.setRentAmount(updatedLease.getRentAmount());
-                    return ResponseEntity.ok(leaseRepository.save(lease));
-                })
-                .orElse(ResponseEntity.notFound().build());
+        Lease updatedLeaseResponse = leaseService.updateLease(id, updatedLease);  // Use leaseService
+        return ResponseEntity.ok(updatedLeaseResponse);
     }
 
     @DeleteMapping("/leases/{id}")
     public ResponseEntity<Void> deleteLease(@PathVariable Long id) {
-        leaseRepository.deleteById(id);
+        leaseService.deleteLease(id);  // Use leaseService
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/leases/{userId}")
+    public ResponseEntity<Lease> getLeaseByUserId(@PathVariable Long userId) {
+        Optional<Lease> lease = leaseService.getLeaseByUserId(userId);  // Updated to use User ID instead of Tenant ID
+        return lease.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 }

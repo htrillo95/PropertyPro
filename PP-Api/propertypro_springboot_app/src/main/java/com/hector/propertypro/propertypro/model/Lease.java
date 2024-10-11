@@ -22,8 +22,8 @@ public class Lease {
     private BigDecimal rentAmount;
 
     @ManyToOne
-    @JoinColumn(name = "tenant_id", nullable = false)
-    private Tenant tenant;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User tenant;
 
     @ManyToOne
     @JoinColumn(name = "property_id", nullable = false)
@@ -62,11 +62,11 @@ public class Lease {
         this.rentAmount = rentAmount;
     }
 
-    public Tenant getTenant() {
+    public User getTenant() { // If you're keeping 'tenant' as the field name
         return tenant;
     }
 
-    public void setTenant(Tenant tenant) {
+    public void setTenant(User tenant) {
         this.tenant = tenant;
     }
 
