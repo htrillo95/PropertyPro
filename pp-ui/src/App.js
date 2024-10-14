@@ -19,6 +19,7 @@ import Settings from './pages/Settings';
 import AdminLogin from './AdminLogin';  // Use the updated, shorter AdminLogin
 import ProtectedRoute from './ProtectedRoute';  // For route protection
 import { AuthProvider } from './context/AuthContext';  // For handling user authentication
+import LeaseManagement from './components/LeaseManagement';
 
 function App() {
     return (
@@ -49,6 +50,7 @@ function App() {
                             <Route path="property-management" element={<PropertyManagement />} />
                             <Route path="reports" element={<Reports />} />
                             <Route path="settings" element={<Settings />} />
+                            <Route path="lease-management" element={<LeaseManagement />} />
                         </Route>
                     </Routes>
                     <Footer />

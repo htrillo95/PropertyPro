@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Import Auth context
 import axios from 'axios';
 
 function TenantPortal() {
@@ -7,19 +8,25 @@ function TenantPortal() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth(); // Use login from AuthContext
 
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
-            // Send the username and password to the backend for authentication
             const response = await axios.post('http://localhost:8080/api/auth/login', {
                 username,
                 password
-            }, { withCredentials: true }); // Enable sending/receiving cookies
+            }, { withCredentials: true });
 
-            // Redirect the user to the tenant dashboard after successful login
+            const userData = response.data;
+            console.log('Login Response:', userData); // Debug log
+
+            localStorage.setItem('token', userData.token || ''); // Store token
+
+            login(userData); // Update context with user data
             navigate('/tenant-dashboard');
         } catch (error) {
+            console.error('Login error:', error); // Debug log
             setError('Invalid username or password');
         }
     };
@@ -29,12 +36,9 @@ function TenantPortal() {
             <div className="col-md-6">
                 <div className="card shadow-lg p-4">
                     <div className="card-body">
-                        <div className="tenants-hero-section text-center mb-4">
-                            <h1 className="display-5">Welcome, Tenants!</h1>
-                            <p className="lead">Log in to access your portal and manage your account.</p>
-                        </div>
+                        <h1 className="display-5 text-center">Welcome, Tenants!</h1>
                         {error && <p style={{ color: 'red' }}>{error}</p>}
-                        <form onSubmit={handleLogin} className="mt-4">
+                        <form onSubmit={handleLogin}>
                             <div className="mb-3">
                                 <label htmlFor="username" className="form-label">Username:</label>
                                 <input
@@ -62,7 +66,7 @@ function TenantPortal() {
                             <button type="submit" className="btn btn-primary btn-block">Log In to Your Portal</button>
                         </form>
                         <p className="mt-3">
-                            Don't have an account? <Link to="/register" className="text-primary">Register here</Link>
+                            Don't have an account? <Link to="/register">Register here</Link>
                         </p>
                     </div>
                 </div>

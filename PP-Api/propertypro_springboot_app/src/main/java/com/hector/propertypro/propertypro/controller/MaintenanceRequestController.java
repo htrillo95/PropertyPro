@@ -16,31 +16,30 @@ public class MaintenanceRequestController {
     @Autowired
     private MaintenanceRequestService maintenanceRequestService;
 
-    // Endpoint for submitting a maintenance request
     @PostMapping("/submit")
-    public ResponseEntity<MaintenanceRequest> submitRequest(@RequestBody MaintenanceRequest request) {
-        MaintenanceRequest savedRequest = maintenanceRequestService.saveRequest(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRequest);
+    public ResponseEntity<?> submitRequest(@RequestBody MaintenanceRequest request) {
+        try {
+            System.out.println("Received maintenance request: " + request);
+
+            // Validate tenant and property are not null
+            if (request.getTenant() == null || request.getProperty() == null) {
+                System.err.println("Invalid request: Tenant or Property is null");
+                return ResponseEntity.badRequest().body("Tenant and Property are required.");
+            }
+
+            MaintenanceRequest savedRequest = maintenanceRequestService.saveRequest(request);
+            System.out.println("Saved maintenance request: " + savedRequest);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving request");
+        }
     }
 
-    // Endpoint for fetching all maintenance requests (admin view)
-    @GetMapping("/all")
-    public ResponseEntity<List<MaintenanceRequest>> getAllRequests() {
-        List<MaintenanceRequest> requests = maintenanceRequestService.getAllRequests();
-        return ResponseEntity.ok(requests);
-    }
-
-    // Endpoint for fetching maintenance requests by tenant ID
     @GetMapping("/tenant/{tenantId}")
     public ResponseEntity<List<MaintenanceRequest>> getRequestsByTenant(@PathVariable Long tenantId) {
+        System.out.println("Fetching requests for tenant ID: " + tenantId); // Debug log
         List<MaintenanceRequest> requests = maintenanceRequestService.getRequestsByTenantId(tenantId);
         return ResponseEntity.ok(requests);
-    }
-
-    // Endpoint for updating the status of a maintenance request
-    @PutMapping("/update-status/{requestId}")
-    public ResponseEntity<MaintenanceRequest> updateRequestStatus(@PathVariable Long requestId, @RequestParam boolean isResolved) {
-        MaintenanceRequest updatedRequest = maintenanceRequestService.updateRequestStatus(requestId, isResolved);
-        return ResponseEntity.ok(updatedRequest);
     }
 }

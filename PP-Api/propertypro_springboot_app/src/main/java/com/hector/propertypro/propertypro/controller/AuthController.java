@@ -50,36 +50,57 @@ public class AuthController {
 
     // Register a new user (tenant-only)
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> processRegistrationForm(@RequestBody @Valid RegistrationFormDTO registrationFormDTO, Errors errors, HttpServletRequest request) {
+    public ResponseEntity<Map<String, String>> processRegistrationForm(
+            @RequestBody @Valid RegistrationFormDTO registrationFormDTO,
+            Errors errors, HttpServletRequest request) {
+
         Map<String, String> response = new HashMap<>();
+
+        // Check for validation errors
         if (errors.hasErrors()) {
             response.put("message", "Validation errors");
+            System.out.println("Validation errors: " + errors.getAllErrors()); // Debug log
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
+        // Check if user already exists by username
         Optional<User> existingUser = userRepository.findByUsername(registrationFormDTO.getUsername());
         if (existingUser.isPresent()) {
             response.put("message", "A user with that username already exists");
+            System.out.println("User already exists: " + registrationFormDTO.getUsername()); // Debug log
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        // Set default role as "TENANT" for public registrations
+        // Set default role as "TENANT"
         String role = "TENANT";
         String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword());
-        User newUser = new User(registrationFormDTO.getName(), registrationFormDTO.getEmail(), registrationFormDTO.getUsername(), hashedPassword, role);
 
-        // Create a new Tenant and link it to the User
+        // Create new User object
+        User newUser = new User(
+                registrationFormDTO.getName(),
+                registrationFormDTO.getEmail(),
+                registrationFormDTO.getUsername(),
+                hashedPassword,
+                role
+        );
+
+        // Create new Tenant object and link it to the User
         Tenant newTenant = new Tenant();
         newTenant.setName(registrationFormDTO.getName());
         newTenant.setEmail(registrationFormDTO.getEmail());
-        newTenant.setUser(newUser); // Establish the bi-directional relationship
-        newUser.setTenant(newTenant);
+        newTenant.setPhone(registrationFormDTO.getPhone()); // Set phone field
+        newTenant.setUser(newUser); // Establish the relationship
+        newUser.setTenant(newTenant); // Bi-directional link
 
-        // Save User (and Tenant because of CascadeType.ALL)
+        System.out.println("New tenant created: " + newTenant); // Debug log
+
+        // Save the User (and Tenant with CascadeType.ALL)
         userRepository.save(newUser);
         setUserInSession(request.getSession(), newUser);
 
         response.put("message", "User registered successfully");
+        System.out.println("User registered successfully: " + newUser.getUsername()); // Debug log
+
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -130,11 +151,22 @@ public class AuthController {
     }
 
     public User getUserFromSession(HttpSession session) {
-        Long userId = (Long) session.getAttribute(userSessionKey);
-        if (userId == null) {
+        Object userIdObj = session.getAttribute(userSessionKey);
+
+        // Log session contents to debug session data
+        System.out.println("Session ID: " + session.getId());
+        System.out.println("User session key value: " + userIdObj);
+
+        if (userIdObj == null || !(userIdObj instanceof Long)) {
+            System.out.println("User session key not found or invalid");
             return null;
         }
+
+        Long userId = (Long) userIdObj;
         Optional<User> userOpt = userRepository.findById(userId);
+
+        System.out.println("User found in DB: " + userOpt.isPresent()); // Debug: User existence
+
         return userOpt.orElse(null);
     }
 }

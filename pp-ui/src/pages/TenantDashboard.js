@@ -9,62 +9,72 @@ function TenantDashboard() {
     const [maintenanceIssue, setMaintenanceIssue] = useState('');
     const [error, setError] = useState('');
 
-    // Fetch user-related data once the user is available in context
+    // Add Debug Logs
     useEffect(() => {
         console.log("User context:", user); // Log user context to debug
-        console.log("Token:", localStorage.getItem('token')); // Log token to debug
+        const token = localStorage.getItem('token');
+        console.log("Token:", token); // Log token to debug
 
         if (user && user.id) {
+            console.log("User authenticated with ID:", user.id); // Verify user ID
+
             // Fetch lease info for the tenant
-            axios.get(`/api/user/lease/${user.id}`, { // Fetch based on user ID
+            axios.get(`/api/user/lease/${user.id}`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .then(response => setLeaseInfo(response.data))
+            .then((response) => {
+                console.log("Lease info:", response.data); // Debug lease data
+                setLeaseInfo(response.data);
+            })
             .catch((err) => {
                 console.error('Failed to fetch lease information:', err);
                 setError('Failed to fetch lease information');
             });
 
-            // Fetch all maintenance requests for the tenant
+            // Fetch maintenance requests for the tenant
             axios.get(`/api/user/${user.id}/maintenance-requests`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             })
-            .then(response => setMaintenanceRequests(response.data))
+            .then((response) => {
+                console.log("Maintenance requests:", response.data); // Debug request data
+                setMaintenanceRequests(response.data);
+            })
             .catch((err) => {
                 console.error('Failed to fetch maintenance requests:', err);
                 setError('Failed to fetch maintenance requests');
             });
         } else {
+            console.warn("User not authenticated or missing user ID"); // Log warning
             setError('User not authenticated or missing user ID');
         }
     }, [user]);
 
     const handleMaintenanceRequest = async (event) => {
         event.preventDefault();
-        
+    
         if (!user || !user.id) {
             alert('User not authenticated or missing user ID.');
             return;
         }
-
+    
         try {
             const response = await axios.post('/api/maintenance/submit', {
                 description: maintenanceIssue,
-                tenantId: user.id, // Use tenant ID from context
-                propertyId: leaseInfo?.property?.id // If lease info contains property ID
+                tenant: { id: user.id },  // Ensure tenant ID is correctly nested
+                property: { id: leaseInfo?.property?.id }  // Ensure property ID is present
             }, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`
                 }
             });
-
+    
             alert('Maintenance request submitted successfully');
-            setMaintenanceRequests([...maintenanceRequests, response.data]); // Update local state
-            setMaintenanceIssue(''); // Clear form
+            setMaintenanceRequests([...maintenanceRequests, response.data]);
+            setMaintenanceIssue('');
         } catch (error) {
             console.error('Error submitting request:', error);
             alert('Failed to submit maintenance request');
@@ -76,7 +86,6 @@ function TenantDashboard() {
             <h2 className="text-center">Tenant Dashboard</h2>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             
-            {/* Lease Information Section */}
             <div className="lease-info-section my-5">
                 <h3>Your Lease Information</h3>
                 {leaseInfo ? (
@@ -91,7 +100,6 @@ function TenantDashboard() {
                 )}
             </div>
 
-            {/* Maintenance Requests Section */}
             <div className="maintenance-requests-section my-5">
                 <h3>Your Maintenance Requests</h3>
                 {maintenanceRequests.length > 0 ? (
@@ -109,7 +117,6 @@ function TenantDashboard() {
                 )}
             </div>
 
-            {/* Maintenance Request Form */}
             <div className="maintenance-request-form my-5">
                 <h3>Submit a Maintenance Request</h3>
                 <form onSubmit={handleMaintenanceRequest}>
@@ -129,7 +136,6 @@ function TenantDashboard() {
                 </form>
             </div>
 
-            {/* Payment Information Section */}
             <div className="payment-info-section my-5 text-center">
                 <h3>Rent Payment</h3>
                 <p>You can pay your rent online through our secure payment portal.</p>
