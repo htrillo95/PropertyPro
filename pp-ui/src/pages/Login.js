@@ -13,22 +13,29 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
-                username,
-                password
-            });
-            const { role } = response.data; // Ensure role is returned from backend
- 
+            const response = await axios.post(
+                'http://localhost:8080/api/auth/login',
+                { username, password },
+                { withCredentials: true } // Ensure cookies are sent with the request
+            );
+
+            const { role, token } = response.data; // Ensure role and token are returned from backend
+            console.log('Login Response:', response.data); // Debugging log
+
+            // Store the token in localStorage
+            localStorage.setItem('token', token || '');
+
             if (role === 'admin') {
-                login('admin'); // Set login role for admin
+                login(response.data); // Set login role for admin
                 navigate('/admin'); // Redirect to admin dashboard
             } else if (role === 'TENANT') {
-                login('tenant'); // Set login role for tenant
+                login(response.data); // Set login role for tenant
                 navigate('/tenant-dashboard'); // Redirect to tenant dashboard
             } else {
                 setError('Invalid role');
             }
         } catch (error) {
+            console.error('Login error:', error); // Debug log
             setError('Invalid username or password');
         }
     };
@@ -36,11 +43,11 @@ function Login() {
     return (
         <div className="login-container">
             <form onSubmit={handleLogin}>
-                {error && <p className="error-message">{error}</p>}
+                {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
                 <input
                     type="text"
-                    value={username} 
-                    onChange={(e) => setUsername(e.target.value)} 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
                     required
                 />

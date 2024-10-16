@@ -12,11 +12,13 @@ function TenantPortal() {
 
     const handleLogin = async (event) => {
         event.preventDefault();
+
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
-                username,
-                password
-            }, { withCredentials: true });
+            const response = await axios.post(
+                'http://localhost:8080/api/auth/login',
+                { username, password },
+                { withCredentials: true } // Ensure cookies are sent
+            );
 
             const userData = response.data;
             console.log('Login Response:', userData); // Debug log
@@ -24,7 +26,7 @@ function TenantPortal() {
             localStorage.setItem('token', userData.token || ''); // Store token
 
             login(userData); // Update context with user data
-            navigate('/tenant-dashboard');
+            navigate('/tenant-dashboard'); // Redirect to tenant dashboard
         } catch (error) {
             console.error('Login error:', error); // Debug log
             setError('Invalid username or password');

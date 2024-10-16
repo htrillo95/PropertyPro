@@ -20,7 +20,11 @@ const AdminPropertyForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('/api/admin/properties', property);
+            await axios.post(
+                '/api/admin/properties',
+                property,
+                { withCredentials: true } // Ensure cookies are sent
+            );
             alert('Property added successfully');
             setProperty({
                 title: '',
@@ -29,6 +33,7 @@ const AdminPropertyForm = () => {
                 externalLink: '',
             });
         } catch (error) {
+            console.error('Error adding property:', error); // Debug log
             alert('Error adding property');
         }
     };

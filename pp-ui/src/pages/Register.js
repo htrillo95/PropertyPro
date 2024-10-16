@@ -7,25 +7,29 @@ function Register() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [phone, setPhone] = useState(''); // New phone field state
+    const [phone, setPhone] = useState(''); // Phone field
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleRegister = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/register', {
-                name,
-                username,
-                email,
-                password,
-                phone // Include phone field
-            });
-    
-            navigate('/tenant-portal'); // Redirect on success
+            const response = await axios.post(
+                'http://localhost:8080/api/auth/register',
+                { name, username, email, password, phone }, // Include phone
+                { withCredentials: true } // Ensure cookies are included
+            );
+
+            console.log('Registration response:', response.data); // Debug log
+
+            // Redirect to tenant portal on success
+            navigate('/tenant-portal');
         } catch (error) {
             console.error('Registration failed:', error);
-            setError('Registration failed: ' + error.response?.data?.message || 'Unknown error');
+            setError(
+                'Registration failed: ' +
+                (error.response?.data?.message || 'Unknown error')
+            );
         }
     };
 
@@ -82,13 +86,14 @@ function Register() {
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="phone" className="form-label">Phone:</label> {/* New phone field */}
+                                <label htmlFor="phone" className="form-label">Phone:</label>
                                 <input
                                     type="text"
                                     id="phone"
                                     className="form-control"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
+                                    required
                                 />
                             </div>
                             <button type="submit" className="btn btn-primary btn-block">Register</button>

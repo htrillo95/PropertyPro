@@ -17,12 +17,12 @@ function LeaseManagement() {
 
     useEffect(() => {
         // Fetch all users (acting as tenants)
-        axios.get('http://localhost:8080/api/admin/users')
+        axios.get('http://localhost:8080/api/admin/users', { withCredentials: true })
             .then(response => setUsers(response.data))  // Fetch users (previously tenants)
             .catch(err => setError('Failed to fetch users'));
 
         // Fetch all properties
-        axios.get('http://localhost:8080/api/admin/properties')
+        axios.get('http://localhost:8080/api/admin/properties', { withCredentials: true })
             .then(response => setProperties(response.data))
             .catch(err => setError('Failed to fetch properties'));
     }, []);
@@ -43,7 +43,7 @@ function LeaseManagement() {
             property: { id: lease.propertyId }
         };
 
-        axios.post('http://localhost:8080/api/admin/leases', leaseData)
+        axios.post('http://localhost:8080/api/admin/leases', leaseData, { withCredentials: true })
             .then(response => setMessage('Lease added successfully!'))
             .catch(err => setError('Failed to add lease'));
     };

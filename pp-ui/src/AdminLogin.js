@@ -15,10 +15,11 @@ const AdminLogin = () => {
 
         try {
             // Send a POST request to your backend API to verify credentials
-            const response = await axios.post('http://localhost:8080/api/auth/login', { 
-                username, 
-                password 
-            });
+            const response = await axios.post(
+                'http://localhost:8080/api/auth/login', 
+                { username, password }, 
+                { withCredentials: true }  // Add withCredentials here
+            );
 
             // If login is successful, you will get user data from the response
             if (response.status === 200 && response.data.role === 'ADMIN') {

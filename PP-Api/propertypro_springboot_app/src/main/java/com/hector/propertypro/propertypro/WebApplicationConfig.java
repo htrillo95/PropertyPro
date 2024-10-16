@@ -11,21 +11,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebApplicationConfig implements WebMvcConfigurer {
 
     @Bean
-    public AuthenticationFilter authenticationFilter(){
+    public AuthenticationFilter authenticationFilter() {
         return new AuthenticationFilter();
     }
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry){
-        registry.addInterceptor(authenticationFilter());
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authenticationFilter())
+                .excludePathPatterns("/api/auth/login", "/api/auth/register", "/api/auth/logout");
+        // Exclude paths to avoid blocking authentication endpoints
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000") // Adjust according to your frontend URL
-                .allowedMethods("GET", "POST", "PUT", "DELETE") // Or any methods you intend to support
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
-
 }

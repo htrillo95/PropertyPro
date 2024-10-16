@@ -3,7 +3,6 @@ import { Button, Card, ListGroup, Form, Modal } from 'react-bootstrap';
 import axios from 'axios';
 
 function PropertyManagement() {
-    // State to hold properties
     const [properties, setProperties] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(false);
@@ -14,77 +13,93 @@ function PropertyManagement() {
         address: '',
         listingUrl: '',
         imageUrl: '',
-        rent_amount: '', // Ensure the correct field name is used
-        bedrooms: '', // Ensure the correct field name is used
-        bathrooms: '', // Ensure the correct field name is used
-        type: '' // Ensure the correct field name is used
+        rent_amount: '',
+        bedrooms: '',
+        bathrooms: '',
+        type: '',
     });
 
-    // Fetch properties from the backend when component mounts
+    const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+
     useEffect(() => {
-        axios.get('http://localhost:8080/api/properties')
-            .then(response => {
-                setProperties(response.data);
+        axios
+            .get('http://localhost:8080/api/properties', {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
             })
-            .catch(error => {
+            .then((response) => setProperties(response.data))
+            .catch((error) => {
                 console.error('Error fetching properties:', error);
+                setError('Failed to fetch properties.');
             });
     }, []);
 
-    // Handle form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewProperty({
             ...newProperty,
-            [name]: (name === 'rent_amount' || name === 'bedrooms' || name === 'bathrooms') ? parseFloat(value) : value
+            [name]: value,
         });
     };
 
-    // Handle form submission for adding or updating a property
     const handleAddOrEditProperty = () => {
-        if (editing) {
-            // Update property
-            axios.put(`http://localhost:8080/api/properties/${currentPropertyId}`, newProperty)
-                .then(response => {
-                    setProperties(properties.map(prop => prop.id === currentPropertyId ? response.data : prop));
-                    setShowModal(false);
-                    setEditing(false);
-                    setCurrentPropertyId(null);
-                    resetNewProperty();
-                })
-                .catch(error => {
-                    console.error('Error updating property:', error);
-                });
-        } else {
-            // Add property
-            axios.post('http://localhost:8080/api/properties', newProperty)
-                .then(response => {
-                    setProperties([...properties, response.data]);
-                    setShowModal(false);
-                    resetNewProperty();
-                })
-                .catch(error => {
-                    console.error('Error adding property:', error);
-                });
-        }
+        const endpoint = editing
+            ? `http://localhost:8080/api/properties/${currentPropertyId}`
+            : 'http://localhost:8080/api/properties';
+        const method = editing ? 'put' : 'post';
+
+        axios({
+            method,
+            url: endpoint,
+            data: newProperty,
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        })
+            .then((response) => {
+                setProperties((prev) =>
+                    editing
+                        ? prev.map((prop) =>
+                              prop.id === currentPropertyId ? response.data : prop
+                          )
+                        : [...prev, response.data]
+                );
+                setShowModal(false);
+                setEditing(false);
+                setCurrentPropertyId(null);
+                resetNewProperty();
+                setMessage('Property saved successfully!');
+            })
+            .catch((error) => {
+                console.error('Error saving property:', error);
+                setError('Failed to save property.');
+            });
     };
 
-    // Handle property deletion with confirmation
     const handleDeleteProperty = (id) => {
-        // Show confirmation dialog before deletion
-        const confirmDelete = window.confirm('Are you sure you want to delete this property?');
-        if (confirmDelete) {
-            axios.delete(`http://localhost:8080/api/properties/${id}`)
-                .then(() => {
-                    setProperties(properties.filter(prop => prop.id !== id));
+        if (window.confirm('Are you sure you want to delete this property?')) {
+            axios
+                .delete(`http://localhost:8080/api/properties/${id}`, {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
                 })
-                .catch(error => {
+                .then(() => {
+                    setProperties((prev) => prev.filter((prop) => prop.id !== id));
+                    setMessage('Property deleted successfully!');
+                })
+                .catch((error) => {
                     console.error('Error deleting property:', error);
+                    setError('Failed to delete property.');
                 });
         }
     };
 
-    // Handle property editing
     const handleEditProperty = (property) => {
         setNewProperty(property);
         setEditing(true);
@@ -92,7 +107,6 @@ function PropertyManagement() {
         setShowModal(true);
     };
 
-    // Reset new property state
     const resetNewProperty = () => {
         setNewProperty({
             title: '',
@@ -103,7 +117,7 @@ function PropertyManagement() {
             rent_amount: '',
             bedrooms: '',
             bathrooms: '',
-            type: ''
+            type: '',
         });
     };
 
@@ -111,29 +125,41 @@ function PropertyManagement() {
         <div className="property-management">
             <h2 className="mb-4">Property Management</h2>
 
+            {message && <p style={{ color: 'green' }}>{message}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+
             <Card>
                 <ListGroup variant="flush">
-                    {properties.map((property, index) => (
-                        <ListGroup.Item key={index} className="d-flex justify-content-between align-items-center">
+                    {properties.map((property) => (
+                        <ListGroup.Item
+                            key={property.id}
+                            className="d-flex justify-content-between align-items-center"
+                        >
                             <div>
-                                <strong>{property.title}</strong><br />
-                                <small>{property.description}</small><br />
-                                <a href={property.listingUrl} target="_blank" rel="noopener noreferrer">
+                                <strong>{property.title}</strong>
+                                <br />
+                                <small>{property.description}</small>
+                                <br />
+                                <a
+                                    href={property.listingUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
                                     View Listing
                                 </a>
                             </div>
                             <div>
-                                <Button 
-                                    variant="outline-primary" 
-                                    size="sm" 
-                                    className="me-2" 
+                                <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    className="me-2"
                                     onClick={() => handleEditProperty(property)}
                                 >
                                     Edit
                                 </Button>
-                                <Button 
-                                    variant="outline-danger" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
                                     onClick={() => handleDeleteProperty(property.id)}
                                 >
                                     Delete
@@ -144,18 +170,23 @@ function PropertyManagement() {
                 </ListGroup>
             </Card>
 
-            <Button variant="success" className="mt-4" onClick={() => {
-                setShowModal(true);
-                setEditing(false);
-                resetNewProperty();
-            }}>
+            <Button
+                variant="success"
+                className="mt-4"
+                onClick={() => {
+                    setShowModal(true);
+                    setEditing(false);
+                    resetNewProperty();
+                }}
+            >
                 Add Property
             </Button>
 
-            {/* Modal for Adding or Editing a Property */}
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
-                    <Modal.Title>{editing ? 'Edit Property' : 'Add New Property'}</Modal.Title>
+                    <Modal.Title>
+                        {editing ? 'Edit Property' : 'Add New Property'}
+                    </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form>
@@ -243,7 +274,9 @@ function PropertyManagement() {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>
+                        Close
+                    </Button>
                     <Button variant="primary" onClick={handleAddOrEditProperty}>
                         {editing ? 'Save Changes' : 'Add Property'}
                     </Button>

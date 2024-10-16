@@ -29,11 +29,10 @@ public class AuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private TenantRepository tenantRepository; // Inject TenantRepository
+    private TenantRepository tenantRepository;
 
     private static final String userSessionKey = "user";
     private static final Logger logger = Logger.getLogger(AuthController.class.getName());
-
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
@@ -43,130 +42,93 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Helper method to set user in session
+    // Set user in session
     private static void setUserInSession(HttpSession session, User user) {
         session.setAttribute(userSessionKey, user.getId());
+        System.out.println("User ID set in session: " + user.getId());
+        System.out.println("Session ID: " + session.getId());
     }
 
-    // Register a new user (tenant-only)
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> processRegistrationForm(
-            @RequestBody @Valid RegistrationFormDTO registrationFormDTO,
-            Errors errors, HttpServletRequest request) {
-
-        Map<String, String> response = new HashMap<>();
-
-        // Check for validation errors
-        if (errors.hasErrors()) {
-            response.put("message", "Validation errors");
-            System.out.println("Validation errors: " + errors.getAllErrors()); // Debug log
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        // Check if user already exists by username
-        Optional<User> existingUser = userRepository.findByUsername(registrationFormDTO.getUsername());
-        if (existingUser.isPresent()) {
-            response.put("message", "A user with that username already exists");
-            System.out.println("User already exists: " + registrationFormDTO.getUsername()); // Debug log
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        // Set default role as "TENANT"
-        String role = "TENANT";
-        String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword());
-
-        // Create new User object
-        User newUser = new User(
-                registrationFormDTO.getName(),
-                registrationFormDTO.getEmail(),
-                registrationFormDTO.getUsername(),
-                hashedPassword,
-                role
-        );
-
-        // Create new Tenant object and link it to the User
-        Tenant newTenant = new Tenant();
-        newTenant.setName(registrationFormDTO.getName());
-        newTenant.setEmail(registrationFormDTO.getEmail());
-        newTenant.setPhone(registrationFormDTO.getPhone()); // Set phone field
-        newTenant.setUser(newUser); // Establish the relationship
-        newUser.setTenant(newTenant); // Bi-directional link
-
-        System.out.println("New tenant created: " + newTenant); // Debug log
-
-        // Save the User (and Tenant with CascadeType.ALL)
-        userRepository.save(newUser);
-        setUserInSession(request.getSession(), newUser);
-
-        response.put("message", "User registered successfully");
-        System.out.println("User registered successfully: " + newUser.getUsername()); // Debug log
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    // Login user
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> processLoginForm(@RequestBody @Valid LoginRequest loginRequest, Errors errors, HttpServletRequest request) {
-        Map<String, String> response = new HashMap<>();
-        if (errors.hasErrors()) {
-            response.put("message", "Validation errors");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        // Check user by username
-        Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
-        if (userOpt.isEmpty()) {
-            logger.info("User not found: " + loginRequest.getUsername());
-            response.put("message", "Credentials invalid");
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        User user = userOpt.get();
-        logger.info("User found in DB: " + user.getUsername());
-        logger.info("Password entered: " + loginRequest.getPassword());
-        logger.info("Password in DB: " + user.getPassword());
-
-        // Check if password matches
-        boolean passwordMatches = passwordEncoder.matches(loginRequest.getPassword(), user.getPassword());
-        logger.info("Password matches: " + passwordMatches);
-
-        if (!passwordMatches) {
-            response.put("message", "Credentials invalid");
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        setUserInSession(request.getSession(), user);
-
-        // Pass back the user's role for frontend to handle redirection
-        response.put("message", "Login successful");
-        response.put("role", user.getRole());
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    // Logout user
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        request.getSession().invalidate();
-        return new ResponseEntity<>("User logged out successfully", HttpStatus.OK);
-    }
-
+    // Get user from session
     public User getUserFromSession(HttpSession session) {
         Object userIdObj = session.getAttribute(userSessionKey);
-
-        // Log session contents to debug session data
         System.out.println("Session ID: " + session.getId());
-        System.out.println("User session key value: " + userIdObj);
+        System.out.println("User session key: " + userIdObj);
 
         if (userIdObj == null || !(userIdObj instanceof Long)) {
-            System.out.println("User session key not found or invalid");
+            System.out.println("Invalid or missing user in session");
             return null;
         }
 
         Long userId = (Long) userIdObj;
         Optional<User> userOpt = userRepository.findById(userId);
-
-        System.out.println("User found in DB: " + userOpt.isPresent()); // Debug: User existence
+        System.out.println("User found: " + userOpt.isPresent());
 
         return userOpt.orElse(null);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, String>> registerUser(
+            @RequestBody @Valid RegistrationFormDTO registrationFormDTO, Errors errors, HttpServletRequest request) {
+        Map<String, String> response = new HashMap<>();
+
+        if (errors.hasErrors()) {
+            response.put("message", "Validation errors");
+            System.out.println("Validation errors: " + errors.getAllErrors());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        if (userRepository.findByUsername(registrationFormDTO.getUsername()).isPresent()) {
+            response.put("message", "Username already exists");
+            System.out.println("User exists: " + registrationFormDTO.getUsername());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword());
+        User user = new User(registrationFormDTO.getName(), registrationFormDTO.getEmail(), registrationFormDTO.getUsername(), hashedPassword, "TENANT");
+
+        Tenant tenant = new Tenant();
+        tenant.setName(registrationFormDTO.getName());
+        tenant.setEmail(registrationFormDTO.getEmail());
+        tenant.setPhone(registrationFormDTO.getPhone());
+        tenant.setUser(user);
+        user.setTenant(tenant);
+
+        userRepository.save(user);
+        setUserInSession(request.getSession(), user);
+
+        response.put("message", "User registered successfully");
+        System.out.println("User registered: " + user.getUsername());
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> loginUser(
+            @RequestBody @Valid LoginRequest loginRequest, Errors errors, HttpServletRequest request) {
+        Map<String, String> response = new HashMap<>();
+
+        if (errors.hasErrors()) {
+            response.put("message", "Validation errors");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
+        if (userOpt.isEmpty()) {
+            logger.info("User not found: " + loginRequest.getUsername());
+            response.put("message", "Invalid credentials");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userOpt.get();
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            response.put("message", "Invalid credentials");
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
+        setUserInSession(request.getSession(), user);
+        response.put("message", "Login successful");
+        response.put("role", user.getRole());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

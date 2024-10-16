@@ -31,7 +31,7 @@ function App() {
                         {/* Public routes */}
                         <Route path="/" element={<Home />} />
                         <Route path="/properties" element={<PropertyList />} />
-                        <Route path="/tenants" element={<TenantPortal />} />
+                        <Route path="/tenant-portal" element={<TenantPortal />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/tenant-dashboard" element={<TenantDashboard />} />

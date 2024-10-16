@@ -17,18 +17,16 @@ import java.util.List;
 public class AuthenticationFilter implements HandlerInterceptor {
 
     @Autowired
-    AuthController authController;
+    private AuthController authController;
 
-    // Whitelist
-    private static final List<String> whitelist = Arrays.asList("/", "/api", "/register", "/login", "/users/register", "/users/login", "/send-email");
+    // Whitelisted paths that don't require authentication
+    private static final List<String> WHITELIST = Arrays.asList(
+            "/", "/api", "/api/auth/register", "/api/auth/login",
+            "/users/register", "/users/login", "/send-email"
+    );
 
     private static boolean isWhitelisted(String path) {
-        for (String pathRoot : whitelist) {
-            if (path.equals("/") || path.startsWith(pathRoot)) {
-                return true;
-            }
-        }
-        return false;
+        return WHITELIST.stream().anyMatch(path::startsWith);
     }
 
     @Override
@@ -38,21 +36,22 @@ public class AuthenticationFilter implements HandlerInterceptor {
         System.out.println("Request URI: " + requestURI + ", Method: " + method); // Debug log
 
         if (isWhitelisted(requestURI)) {
+            System.out.println("Whitelisted path: " + requestURI); // Debug log
             return true;
         }
 
-        HttpSession session = request.getSession();
-        User user = authController.getUserFromSession(session);
-
-        if (user != null) {
-            System.out.println("User authenticated: " + user.getUsername()); // Debug log
-            System.out.println("User role: " + user.getRole()); // Debug log
-            return true;
+        HttpSession session = request.getSession(false); // Use false to avoid creating a new session
+        if (session != null) {
+            User user = authController.getUserFromSession(session);
+            if (user != null) {
+                System.out.println("User authenticated: " + user.getUsername()); // Debug log
+                System.out.println("User role: " + user.getRole()); // Debug log
+                return true;
+            }
         }
 
         System.out.println("User not authenticated, redirecting to login"); // Debug log
         response.sendRedirect("/login");
-
         return false;
     }
 }
