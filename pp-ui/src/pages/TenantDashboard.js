@@ -10,12 +10,11 @@ function TenantDashboard() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        console.log('User context:', user); // Debug log
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('token');
         console.log('Token:', token); // Debug log
 
         if (user && user.id) {
-            console.log('User authenticated with ID:', user.id); 
+            console.log('User authenticated with ID:', user.id);
 
             // Fetch lease information for the tenant
             axios.get(`http://localhost:8080/api/user/lease/${user.id}`, {
@@ -23,7 +22,6 @@ function TenantDashboard() {
                 withCredentials: true, // Ensure cookies are sent
             })
             .then((response) => {
-                console.log('Lease info:', response.data); 
                 setLeaseInfo(response.data);
             })
             .catch((err) => {
@@ -37,7 +35,6 @@ function TenantDashboard() {
                 withCredentials: true,
             })
             .then((response) => {
-                console.log('Maintenance requests:', response.data); 
                 setMaintenanceRequests(response.data);
             })
             .catch((err) => {
@@ -45,7 +42,6 @@ function TenantDashboard() {
                 setError('Failed to fetch maintenance requests.');
             });
         } else {
-            console.warn('User not authenticated or missing user ID'); 
             setError('User not authenticated or missing user ID.');
         }
     }, [user]);
@@ -74,7 +70,7 @@ function TenantDashboard() {
 
             alert('Maintenance request submitted successfully.');
             setMaintenanceRequests([...maintenanceRequests, response.data]);
-            setMaintenanceIssue(''); 
+            setMaintenanceIssue('');
         } catch (error) {
             console.error('Error submitting maintenance request:', error);
             alert('Failed to submit maintenance request.');

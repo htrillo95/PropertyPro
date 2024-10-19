@@ -40,17 +40,17 @@ public class AuthenticationFilter implements HandlerInterceptor {
             return true;
         }
 
-        HttpSession session = request.getSession(false); // Use false to avoid creating a new session
+        HttpSession session = request.getSession(false);  // Get session, but don't create a new one
         if (session != null) {
-            User user = authController.getUserFromSession(session);
+            User user = authController.getUserFromSession(session);  // Get user from session
             if (user != null) {
-                System.out.println("User authenticated: " + user.getUsername()); // Debug log
-                System.out.println("User role: " + user.getRole()); // Debug log
-                return true;
+                System.out.println("User authenticated: " + user.getUsername());  // Debug log
+                return true;  // User is authenticated
             }
         }
 
-        System.out.println("User not authenticated, redirecting to login"); // Debug log
+        // If no session or user, redirect to login
+        System.out.println("User not authenticated, redirecting to login");  // Debug log
         response.sendRedirect("/login");
         return false;
     }

@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     useEffect(() => {
+        // Sync state with localStorage
         localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
         localStorage.setItem('userRole', userRole);
         if (user) localStorage.setItem('user', JSON.stringify(user));
@@ -29,6 +30,11 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         setUserRole(userData.role);
         setUser(userData);
+
+        // Store token separately to be reused for API requests
+        if (userData.token) {
+            localStorage.setItem('token', userData.token);
+        }
     };
 
     const logout = () => {

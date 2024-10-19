@@ -1,4 +1,4 @@
-package com.hector.propertypro.propertypro.config;
+package com.hector.propertypro.propertypro;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

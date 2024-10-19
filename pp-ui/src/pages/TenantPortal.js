@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import Auth context
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 function TenantPortal() {
@@ -8,7 +8,7 @@ function TenantPortal() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { login } = useAuth(); // Use login from AuthContext
+    const { login } = useAuth();
 
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -17,18 +17,26 @@ function TenantPortal() {
             const response = await axios.post(
                 'http://localhost:8080/api/auth/login',
                 { username, password },
-                { withCredentials: true } // Ensure cookies are sent
+                { withCredentials: true }
             );
 
             const userData = response.data;
-            console.log('Login Response:', userData); // Debug log
+            console.log('Login Response:', userData);
 
-            localStorage.setItem('token', userData.token || ''); // Store token
+            // Check if login is successful based on the user role or session
+            if (userData && userData.role) {
+                // Update the AuthContext with the user data
+                login(userData);
 
-            login(userData); // Update context with user data
-            navigate('/tenant-dashboard'); // Redirect to tenant dashboard
+                // Clear any error message and redirect to tenant dashboard
+                setError('');
+                navigate('/tenant-dashboard');
+            } else {
+                // Set an error if no user role is received or login fails
+                setError('Login failed: User role not received.');
+            }
         } catch (error) {
-            console.error('Login error:', error); // Debug log
+            console.error('Login error:', error);
             setError('Invalid username or password');
         }
     };

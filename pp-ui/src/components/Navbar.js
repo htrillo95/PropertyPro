@@ -14,7 +14,7 @@ function Navbar() {
             <Link className="nav-link" to="/properties">Properties</Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link" to="/tenants">Tenants</Link>
+            <Link className="nav-link" to="/tenant-portal">Tenants</Link>
           </li>
           <li className="nav-item">
             <Link className="nav-link" to="/admin">Admin Dashboard</Link>

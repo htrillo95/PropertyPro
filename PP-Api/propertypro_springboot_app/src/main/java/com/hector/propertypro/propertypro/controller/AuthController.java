@@ -95,9 +95,10 @@ public class AuthController {
         user.setTenant(tenant);
 
         userRepository.save(user);
-        setUserInSession(request.getSession(), user);
+        setUserInSession(request.getSession(), user);  // Store user in session after registration
 
         response.put("message", "User registered successfully");
+        response.put("sessionId", request.getSession().getId());  // Optional: Send session ID for debugging
         System.out.println("User registered: " + user.getUsername());
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -126,9 +127,11 @@ public class AuthController {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
-        setUserInSession(request.getSession(), user);
+        setUserInSession(request.getSession(), user);  // Ensure user is stored in the session
+
         response.put("message", "Login successful");
         response.put("role", user.getRole());
+        response.put("sessionId", request.getSession().getId());  // Optional: Send session ID for debugging
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
