@@ -10,19 +10,18 @@ function TenantDashboard() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        console.log('Token:', token); // Debug log
+        console.log('User:', user); // Debug log to check user object
 
         if (user && user.id) {
             console.log('User authenticated with ID:', user.id);
 
             // Fetch lease information for the tenant
             axios.get(`http://localhost:8080/api/user/lease/${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true, // Ensure cookies are sent
+                withCredentials: true, // Ensure cookies are sent for session handling
             })
             .then((response) => {
                 setLeaseInfo(response.data);
+                console.log('Lease info retrieved:', response.data);
             })
             .catch((err) => {
                 console.error('Failed to fetch lease info:', err);
@@ -31,11 +30,11 @@ function TenantDashboard() {
 
             // Fetch maintenance requests for the tenant
             axios.get(`http://localhost:8080/api/user/${user.id}/maintenance-requests`, {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true,
+                withCredentials: true, // Session handling via cookies
             })
             .then((response) => {
                 setMaintenanceRequests(response.data);
+                console.log('Maintenance requests retrieved:', response.data);
             })
             .catch((err) => {
                 console.error('Failed to fetch maintenance requests:', err);
@@ -43,6 +42,7 @@ function TenantDashboard() {
             });
         } else {
             setError('User not authenticated or missing user ID.');
+            console.error('User not authenticated or missing user ID');
         }
     }, [user]);
 
@@ -63,8 +63,7 @@ function TenantDashboard() {
                     property: { id: leaseInfo?.property?.id },
                 },
                 {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                    withCredentials: true,
+                    withCredentials: true, // Session handling via cookies
                 }
             );
 

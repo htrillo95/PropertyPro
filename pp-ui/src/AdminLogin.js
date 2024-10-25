@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Import axios for API calls
+import axios from 'axios'; 
 import { useAuth } from './context/AuthContext';
 
 const AdminLogin = () => {
@@ -14,16 +14,14 @@ const AdminLogin = () => {
         e.preventDefault();
 
         try {
-            // Send a POST request to your backend API to verify credentials
             const response = await axios.post(
                 'http://localhost:8080/api/auth/login', 
                 { username, password }, 
-                { withCredentials: true }  // Add withCredentials here
+                { withCredentials: true }  // Ensuring session is created on the backend
             );
 
-            // If login is successful, you will get user data from the response
-            if (response.status === 200 && response.data.role === 'ADMIN') {
-                login('admin'); // Set authenticated state to 'admin'
+            if (response.status === 200 && response.data.role === 'admin') {
+                login(response.data); // Set authenticated state with role
                 navigate('/admin');  // Redirect to Admin Dashboard
             } else {
                 setError('Invalid admin credentials');

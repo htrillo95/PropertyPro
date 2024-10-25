@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 
 function TenantPortal() {
     const [username, setUsername] = useState('');
@@ -13,31 +12,14 @@ function TenantPortal() {
     const handleLogin = async (event) => {
         event.preventDefault();
 
-        try {
-            const response = await axios.post(
-                'http://localhost:8080/api/auth/login',
-                { username, password },
-                { withCredentials: true }
-            );
+        const loginData = { username, password };
+        const result = await login(loginData);  // Use login from AuthContext
 
-            const userData = response.data;
-            console.log('Login Response:', userData);
-
-            // Check if login is successful based on the user role or session
-            if (userData && userData.role) {
-                // Update the AuthContext with the user data
-                login(userData);
-
-                // Clear any error message and redirect to tenant dashboard
-                setError('');
-                navigate('/tenant-dashboard');
-            } else {
-                // Set an error if no user role is received or login fails
-                setError('Login failed: User role not received.');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            setError('Invalid username or password');
+        if (result.success) {
+            setError('');  // Clear error
+            navigate('/tenant-dashboard');
+        } else {
+            setError(result.message || 'Invalid username or password');
         }
     };
 

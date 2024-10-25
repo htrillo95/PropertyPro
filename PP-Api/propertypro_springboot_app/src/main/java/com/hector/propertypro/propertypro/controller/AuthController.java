@@ -42,45 +42,20 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Set user in session
-    private static void setUserInSession(HttpSession session, User user) {
-        session.setAttribute("userId", user.getId());
-        session.setAttribute("userRole", user.getRole());  // Store user role in the session
-        System.out.println("User ID set in session: " + user.getId());
-        System.out.println("User Role set in session: " + user.getRole());
-        System.out.println("Session ID: " + session.getId());
+    // Helper method to set user or admin in session
+    private void setUserInSession(HttpSession session, Long userId, String role) {
+        session.setAttribute("userId", userId);
+        session.setAttribute("userRole", role);
+        logger.info("Session set for userId: " + userId + " with role: " + role);
     }
 
-    // Set admin in session
-    private static void setAdminInSession(HttpSession session) {
-        session.setAttribute("userId", 0L);  // Set a hardcoded ID for admin (or leave as a known value)
-        session.setAttribute("userRole", "admin");
-        System.out.println("Admin session set");
-    }
-
-    // Clear session to avoid session conflicts
+    // Clear session to prevent conflicts
     private void clearSession(HttpSession session) {
-        session.invalidate();  // Invalidate the current session
+        session.invalidate();
+        logger.info("Previous session invalidated.");
     }
 
-    // Get user from session
-    public User getUserFromSession(HttpSession session) {
-        Object userIdObj = session.getAttribute(userSessionKey);
-        System.out.println("Session ID: " + session.getId());
-        System.out.println("User session key: " + userIdObj);
-
-        if (userIdObj == null || !(userIdObj instanceof Long)) {
-            System.out.println("Invalid or missing user in session");
-            return null;
-        }
-
-        Long userId = (Long) userIdObj;
-        Optional<User> userOpt = userRepository.findById(userId);
-        System.out.println("User found: " + userOpt.isPresent());
-
-        return userOpt.orElse(null);
-    }
-
+    // Registration endpoint for tenants
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> registerUser(
             @RequestBody @Valid RegistrationFormDTO registrationFormDTO, Errors errors, HttpServletRequest request) {
@@ -88,36 +63,36 @@ public class AuthController {
 
         if (errors.hasErrors()) {
             response.put("message", "Validation errors");
-            System.out.println("Validation errors: " + errors.getAllErrors());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         if (userRepository.findByUsername(registrationFormDTO.getUsername()).isPresent()) {
             response.put("message", "Username already exists");
-            System.out.println("User exists: " + registrationFormDTO.getUsername());
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         String hashedPassword = passwordEncoder.encode(registrationFormDTO.getPassword());
-        User user = new User(registrationFormDTO.getName(), registrationFormDTO.getEmail(), registrationFormDTO.getUsername(), hashedPassword, "TENANT");
+        User user = new User(registrationFormDTO.getName(), registrationFormDTO.getEmail(),
+                registrationFormDTO.getUsername(), hashedPassword, "TENANT");
 
         Tenant tenant = new Tenant();
         tenant.setName(registrationFormDTO.getName());
         tenant.setEmail(registrationFormDTO.getEmail());
-        tenant.setPhone(registrationFormDTO.getPhone());
         tenant.setUser(user);
         user.setTenant(tenant);
 
         userRepository.save(user);
-        setUserInSession(request.getSession(), user);  // Store user in session after registration
+
+        // Set tenant in session after registration
+        setUserInSession(request.getSession(), user.getId(), "tenant");
 
         response.put("message", "User registered successfully");
-        response.put("sessionId", request.getSession().getId());  // Optional: Send session ID for debugging
-        System.out.println("User registered: " + user.getUsername());
-
+        response.put("role", "tenant");
+        response.put("sessionId", request.getSession().getId());  // Return session ID
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // Login endpoint with separate handling for admin and tenant
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> loginUser(
             @RequestBody @Valid LoginRequest loginRequest, Errors errors, HttpServletRequest request) {
@@ -128,22 +103,24 @@ public class AuthController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        clearSession(request.getSession());  // Clear previous session to avoid conflicts
+        clearSession(request.getSession());  // Clear any previous session to avoid conflicts
 
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
 
-        // Admin login logic using hardcoded credentials
-        if (username.equals("admin")) {
+        // Hard-coded admin check
+        if ("admin".equals(username)) {
             Optional<User> adminUser = userRepository.findByUsername(username);
             if (adminUser.isEmpty() || !passwordEncoder.matches(password, adminUser.get().getPassword())) {
                 response.put("message", "Invalid credentials");
                 return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
             }
 
-            setAdminInSession(request.getSession());
+            // Set admin session
+            setUserInSession(request.getSession(), 0L, "admin");
             response.put("message", "Admin login successful");
             response.put("role", "admin");
+            response.put("sessionId", request.getSession().getId());  // Return session ID
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
@@ -154,12 +131,29 @@ public class AuthController {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
+        // Set tenant session
         User user = userOpt.get();
-        setUserInSession(request.getSession(), user);  // Tenant session handling
+        setUserInSession(request.getSession(), user.getId(), "tenant");
 
         response.put("message", "Login successful");
-        response.put("role", user.getRole());
-        response.put("sessionId", request.getSession().getId());  // Send session ID for debugging
+        response.put("role", "tenant");
+        response.put("sessionId", request.getSession().getId());  // Return session ID
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Optional: A method to check if the user is authenticated
+    @GetMapping("/check-session")
+    public ResponseEntity<Map<String, Object>> checkSession(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        if (session.getAttribute("userId") != null) {
+            response.put("isAuthenticated", true);
+            response.put("userId", session.getAttribute("userId"));
+            response.put("userRole", session.getAttribute("userRole"));
+            response.put("sessionId", session.getId());
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            response.put("isAuthenticated", false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
     }
 }
