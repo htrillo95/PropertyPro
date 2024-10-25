@@ -32,26 +32,42 @@ public class AuthenticationFilter implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws IOException {
         String requestURI = request.getRequestURI();
-        String method = request.getMethod();
-        System.out.println("Request URI: " + requestURI + ", Method: " + method); // Debug log
+        System.out.println("Request URI: " + requestURI); // Debug log
 
         if (isWhitelisted(requestURI)) {
             System.out.println("Whitelisted path: " + requestURI); // Debug log
-            return true;
+            return true;  // No authentication needed
         }
 
         HttpSession session = request.getSession(false);  // Get session, but don't create a new one
-        if (session != null) {
-            User user = authController.getUserFromSession(session);  // Get user from session
-            if (user != null) {
-                System.out.println("User authenticated: " + user.getUsername());  // Debug log
-                return true;  // User is authenticated
-            }
+        if (session == null || session.getAttribute("userId") == null) {
+            System.out.println("User not authenticated or missing user ID");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not authenticated or missing user ID");
+            return false;
         }
 
-        // If no session or user, redirect to login
-        System.out.println("User not authenticated, redirecting to login");  // Debug log
-        response.sendRedirect("/login");
-        return false;
+        // Retrieve role from the session
+        String userRole = (String) session.getAttribute("userRole");
+        if (userRole == null) {
+            System.out.println("User role not found in session");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "User role not found");
+            return false;
+        }
+
+        // Check if the user is trying to access the admin panel or tenant panel
+        if (requestURI.startsWith("/admin") && !"ADMIN".equals(userRole)) {
+            System.out.println("User does not have permission to access admin resources");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to access this resource");
+            return false;
+        }
+        if (requestURI.startsWith("/tenant") && !"TENANT".equals(userRole)) {
+            System.out.println("User does not have permission to access tenant resources");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to access this resource");
+            return false;
+        }
+
+        // If user is authenticated and has the correct role
+        System.out.println("User authenticated with role: " + userRole);
+        return true;
     }
 }

@@ -3,46 +3,44 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userRole, setUserRole] = useState(null);
+    const [user, setUser] = useState(null);
+
+    // Ensure localStorage is synced when the authentication status or user role changes
+    useEffect(() => {
         const storedAuth = localStorage.getItem('isAuthenticated');
-        return storedAuth ? JSON.parse(storedAuth) : false;
-    });
-
-    const [userRole, setUserRole] = useState(() => {
         const storedRole = localStorage.getItem('userRole');
-        return storedRole || null;
-    });
-
-    const [user, setUser] = useState(() => {
         const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
+
+        if (storedAuth && storedRole && storedUser) {
+            setIsAuthenticated(JSON.parse(storedAuth));
+            setUserRole(storedRole);
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
 
     useEffect(() => {
-        // Sync state with localStorage
         localStorage.setItem('isAuthenticated', JSON.stringify(isAuthenticated));
         localStorage.setItem('userRole', userRole);
         if (user) localStorage.setItem('user', JSON.stringify(user));
     }, [isAuthenticated, userRole, user]);
 
     const login = (userData) => {
-        console.log('Login userData:', userData); // Debug log
         setIsAuthenticated(true);
-        setUserRole(userData.role);
+        setUserRole(userData.role);  // Ensure the role is set during login
         setUser(userData);
-
-        // Store token separately to be reused for API requests
-        if (userData.token) {
-            localStorage.setItem('token', userData.token);
-        }
+        localStorage.setItem('token', userData.token); // Store token for API requests
     };
 
     const logout = () => {
-        console.log('User logged out'); // Debug log
         setIsAuthenticated(false);
         setUserRole(null);
         setUser(null);
-        localStorage.clear(); // Clear all local storage
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
     };
 
     return (

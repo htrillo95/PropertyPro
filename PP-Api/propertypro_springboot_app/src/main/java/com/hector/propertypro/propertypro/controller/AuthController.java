@@ -44,9 +44,23 @@ public class AuthController {
 
     // Set user in session
     private static void setUserInSession(HttpSession session, User user) {
-        session.setAttribute(userSessionKey, user.getId());
+        session.setAttribute("userId", user.getId());
+        session.setAttribute("userRole", user.getRole());  // Store user role in the session
         System.out.println("User ID set in session: " + user.getId());
+        System.out.println("User Role set in session: " + user.getRole());
         System.out.println("Session ID: " + session.getId());
+    }
+
+    // Set admin in session
+    private static void setAdminInSession(HttpSession session) {
+        session.setAttribute("userId", 0L);  // Set a hardcoded ID for admin (or leave as a known value)
+        session.setAttribute("userRole", "admin");
+        System.out.println("Admin session set");
+    }
+
+    // Clear session to avoid session conflicts
+    private void clearSession(HttpSession session) {
+        session.invalidate();  // Invalidate the current session
     }
 
     // Get user from session
@@ -114,24 +128,38 @@ public class AuthController {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
-        if (userOpt.isEmpty()) {
-            logger.info("User not found: " + loginRequest.getUsername());
+        clearSession(request.getSession());  // Clear previous session to avoid conflicts
+
+        String username = loginRequest.getUsername();
+        String password = loginRequest.getPassword();
+
+        // Admin login logic using hardcoded credentials
+        if (username.equals("admin")) {
+            Optional<User> adminUser = userRepository.findByUsername(username);
+            if (adminUser.isEmpty() || !passwordEncoder.matches(password, adminUser.get().getPassword())) {
+                response.put("message", "Invalid credentials");
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            }
+
+            setAdminInSession(request.getSession());
+            response.put("message", "Admin login successful");
+            response.put("role", "admin");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
+        // Tenant login handling
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword())) {
             response.put("message", "Invalid credentials");
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         User user = userOpt.get();
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            response.put("message", "Invalid credentials");
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        setUserInSession(request.getSession(), user);  // Ensure user is stored in the session
+        setUserInSession(request.getSession(), user);  // Tenant session handling
 
         response.put("message", "Login successful");
         response.put("role", user.getRole());
-        response.put("sessionId", request.getSession().getId());  // Optional: Send session ID for debugging
+        response.put("sessionId", request.getSession().getId());  // Send session ID for debugging
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
